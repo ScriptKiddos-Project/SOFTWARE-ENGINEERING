@@ -1,0 +1,25 @@
+{
+    "watch": ["src"],
+    "ext": "ts,json,prisma",
+    
+    "ignore": [
+      "src/**/*.test.ts",
+      "src/**/*.spec.ts",
+      "node_modules",
+      "dist",
+      "logs",
+      "coverage"
+    ],
+    "exec": "ts-node -r tsconfig-paths/register src/server.ts",
+    "env": {
+      "NODE_ENV": "development"
+    },
+    "events": {
+      "restart": "echo 'Server restarted due to file changes...'",
+      "crash": "echo 'Server crashed - waiting for file changes before restart...'"
+    },
+    "delay": 1000,
+    "verbose": true,
+    "restartable": "rs",
+    "colours": true
+  }

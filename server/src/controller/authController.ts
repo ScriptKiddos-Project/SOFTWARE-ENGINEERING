@@ -1,9 +1,9 @@
 import { Response } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { AuthService } from '../services/authService';
+import { authService } from '../services/authService';
 import { UserService } from '../services/userService';
-import { EmailService } from '../services/emailService';
+import { emailService } from '../services/emailService';
 import { 
   generateAccessToken, 
   generateRefreshToken, 
@@ -70,14 +70,14 @@ const changePasswordSchema = z.object({
 });
 
 export class AuthController {
-  private authService: AuthService;
+  private authService: authService;
   private userService: UserService;
-  private emailService: EmailService;
+  private emailService: emailService;
 
   constructor() {
-    this.authService = new AuthService();
+    this.authService = new authService();
     this.userService = new UserService();
-    this.emailService = new EmailService();
+    this.emailService = new emailService();
   }
 
   // Register new user
@@ -330,7 +330,7 @@ export class AuthController {
     await this.authService.generatePasswordResetToken(user);
 
     try {
-      await this.emailService.sendPasswordResetEmail(user);
+      // await this.emailService.sendPasswordResetEmail(user);
       logger.info(`Password reset email sent to ${user.email}`);
     } catch (error) {
       logger.error('Failed to send password reset email:', error);

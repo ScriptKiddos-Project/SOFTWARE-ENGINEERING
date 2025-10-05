@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Input } from '@/components/ui/input';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
+import * as React from 'react';
+
+// UI Components
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Input } from '../ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '../ui/dropdown-menu';
+
+// Icons
 import { Search, MoreVertical, Crown, Shield, User } from 'lucide-react';
-import { ClubMember } from '@/types/club';
+
+// Types
+import { ClubMember } from '../../types/club';
+
 
 interface ClubMembersProps {
   members: ClubMember[];
@@ -36,7 +49,7 @@ export const ClubMembers: React.FC<ClubMembersProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredMembers = members.filter(member => {
-    const fullName = `${member.user?.first_name ?? member.user?.firstName ?? ''} ${member.user?.last_name ?? member.user?.lastName ?? ''}`.toLowerCase();
+    const fullName = `${member.user?.first_name ?? member.user?.first_name ?? ''} ${member.user?.last_name ?? member.user?.last_name ?? ''}`.toLowerCase();
     const email = (member.user?.email ?? '').toLowerCase();
     return fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
   });
@@ -71,15 +84,15 @@ export const ClubMembers: React.FC<ClubMembersProps> = ({
             <div key={member.user_id} className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex items-center space-x-4">
                 <Avatar>
-                  <AvatarImage src={(member.user?.profile_image ?? member.user?.profileImage) as any} />
+                  <AvatarImage src={(member.user?.profile_image ?? member.user?.profile_image) as any} />
                   <AvatarFallback>
-                    {(member.user?.first_name ?? member.user?.firstName ?? ' ')[0]}{(member.user?.last_name ?? member.user?.lastName ?? ' ')[0]}
+                    {(member.user?.first_name ?? member.user?.first_name ?? ' ')[0]}{(member.user?.last_name ?? member.user?.last_name ?? ' ')[0]}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div>
                   <div className="font-medium">
-                    {member.user?.first_name ?? `${member.user?.firstName ?? ''} ${member.user?.lastName ?? ''}`}
+                    {member.user?.first_name ?? `${member.user?.first_name ?? ''} ${member.user?.last_name ?? ''}`}
                   </div>
                   <div className="text-sm text-gray-600">{member.user.email}</div>
                   {member.user.department && (

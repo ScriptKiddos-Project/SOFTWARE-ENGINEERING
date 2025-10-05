@@ -62,12 +62,15 @@ export class AttendanceController {
       return next(new AppError(ERROR_MESSAGES.FORBIDDEN, HTTP_STATUS.FORBIDDEN));
     }
 
-    const result = await attendanceService.markBulkAttendance(
+    const result = await attendanceService.bulkUpdateAttendance(
       eventId,
-      userIds,
-      attended,
-      markedBy,
-      notes
+      {
+        userIds,
+        attended,
+        markedBy,
+        method: 'manual',
+        notes
+      }
     );
 
     res.status(HTTP_STATUS.OK).json(
@@ -162,7 +165,7 @@ export class AttendanceController {
     const { qrData, location } = qrAttendanceSchema.parse(req.body);
     const userId = req.user!.id;
 
-    const result = await attendanceService.markAttendanceByQR(userId, qrData, location);
+    const result = await attendanceService.markAttendanceByQR(userId, qrData);
 
     res.status(HTTP_STATUS.OK).json(
       API_RESPONSE_FORMAT.SUCCESS(result, 'Attendance marked successfully via QR code')

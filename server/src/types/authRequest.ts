@@ -18,10 +18,21 @@ export interface AuthUser {
   totalPoints?: number;
   totalVolunteerHours?: number;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface AuthRequest extends Request {
-  user?: AuthUser;
-  userId?: string;
-  userRole?: UserRole | string;
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: AuthUser;
+    userId?: string;
+    userRole?: UserRole | string;
+  }
 }
+
+export type AuthRequest = Request;
+
+// export interface AuthRequest extends Request {
+//   user?: AuthUser;
+//   userId?: string;
+//   userRole?: UserRole | string;
+// }

@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from 'react';
+import * as React from 'react';
+
+// UI Components
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+
+// Icons
 import { Users, Calendar, Mail, MapPin, Clock } from 'lucide-react';
-import { Club, ClubMember } from '@/types/club';
-import { Event } from '@/types/event';
+
+// Types
+import { Club, ClubMember } from '../../types/club';
+import { Event } from '../../types/event';
+
 
 interface ClubProfileProps {
   club: Club;
@@ -163,7 +171,7 @@ export const ClubProfile: React.FC<ClubProfileProps> = ({
                           {event.location}
                         </div>
                       </div>
-                      <Badge variant="outline">{event.event_type}</Badge>
+                      <Badge variant="outline">{event.eventType}</Badge>
                     </div>
                   </div>
                 ))}
@@ -209,12 +217,12 @@ export const ClubProfile: React.FC<ClubProfileProps> = ({
                     <Avatar>
                       <AvatarImage src={member.user.profile_image} />
                       <AvatarFallback>
-                        {(member.user.first_name ?? member.user.firstName ?? '')?.charAt(0)}{(member.user.last_name ?? member.user.lastName ?? '')?.charAt(0)}
+                        {(member.user.first_name ?? member.user.first_name ?? '')?.charAt(0)}{(member.user.last_name ?? member.user.last_name ?? '')?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <div className="font-medium">
-                        {(member.user.first_name ?? member.user.firstName ?? '')} {(member.user.last_name ?? member.user.lastName ?? '')}
+                        {(member.user.first_name ?? member.user.first_name ?? '')} {(member.user.last_name ?? member.user.last_name ?? '')}
                       </div>
                       <Badge variant="outline" className="text-xs">
                         {member.role}

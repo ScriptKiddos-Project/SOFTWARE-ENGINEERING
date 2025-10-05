@@ -1,11 +1,16 @@
-import React from 'react';
+// import React from 'react';
 import { Calendar, Users, Crown, Settings } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { UserClub } from '@/types/club';
-import { formatDate } from '@/utils/dateUtils';
+
+// UI components
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
+// Types and Utils - go up two folders to src/
+import { UserClub } from '../../types/club';
+import { formatDate } from '../../utils/dateUtils';
+
 
 interface JoinedClubsProps {
   userClubs: UserClub[];

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { AlertTriangle, Info, CheckCircle, XCircle, X } from 'lucide-react';
 
 interface ConfirmDialogProps {

@@ -1,10 +1,15 @@
-import React from 'react';
+// import React from 'react';
 import { Trophy, Calendar, TrendingUp } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PointsHistory as PointsHistoryType } from '@/types/user';
-import { formatDate } from '@/utils/dateUtils';
+
+// UI components
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
+// Types and utils
+import { PointsHistory as PointsHistoryType } from '../../types/user';
+import { formatDate } from '../../utils/dateUtils';
+
 
 interface PointsHistoryProps {
   pointsHistory: PointsHistoryType[];

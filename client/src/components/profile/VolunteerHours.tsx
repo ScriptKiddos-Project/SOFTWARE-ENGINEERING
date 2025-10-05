@@ -1,9 +1,12 @@
-import React from 'react';
+// import React from 'react';
 import { Clock, Heart, Calendar } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { VolunteerRecord } from '@/types/user';
-import { formatDate } from '@/utils/dateUtils';
+
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+
+import { VolunteerRecord } from '../../types/user';
+import { formatDate } from '../../utils/dateUtils';
+
 
 interface VolunteerHoursProps {
   volunteerRecords: VolunteerRecord[];

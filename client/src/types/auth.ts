@@ -1,6 +1,7 @@
 // Authentication-related types and interfaces
 
-export interface User {
+// Frontend type (camelCase)
+export interface AuthUser {
   id: string;
   email: string;
   firstName: string;
@@ -18,11 +19,23 @@ export interface User {
   updatedAt: Date;
 }
 
-// snake_case compatibility
+// Backend type (snake_case from API/Store)
 export interface User {
-  first_name?: string;
-  last_name?: string;
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  student_id?: string;
+  phone?: string;
+  department?: string;
+  year_of_study?: number;
+  role: UserRole;
+  is_verified: boolean;
   profile_image?: string;
+  total_points: number;
+  total_volunteer_hours: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export type UserRole = 'student' | 'club_admin' | 'super_admin';
@@ -107,7 +120,6 @@ export interface ResendVerificationRequest {
   email: string;
 }
 
-// JWT Payload interface
 export interface JWTPayload {
   userId: string;
   email: string;
@@ -116,7 +128,6 @@ export interface JWTPayload {
   exp: number;
 }
 
-// Profile update interface
 export interface ProfileUpdateRequest {
   firstName?: string;
   lastName?: string;
@@ -126,7 +137,6 @@ export interface ProfileUpdateRequest {
   profileImage?: string;
 }
 
-// Auth error types
 export type AuthError = 
   | 'INVALID_CREDENTIALS'
   | 'USER_NOT_FOUND'
@@ -144,7 +154,6 @@ export interface AuthErrorResponse {
   details?: Record<string, string>;
 }
 
-// Password requirements
 export interface PasswordRequirements {
   minLength: number;
   requireUppercase: boolean;
@@ -161,7 +170,6 @@ export const DEFAULT_PASSWORD_REQUIREMENTS: PasswordRequirements = {
   requireSymbols: false,
 };
 
-// Session management
 export interface SessionInfo {
   userId: string;
   lastActivity: Date;
@@ -173,13 +181,4 @@ export interface SessionInfo {
 export interface LogoutAllSessionsResponse {
   message: string;
   sessionsTerminated: number;
-}
-
-// Define and export the AuthUser type
-export interface AuthUser {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  // Add other fields as necessary
 }

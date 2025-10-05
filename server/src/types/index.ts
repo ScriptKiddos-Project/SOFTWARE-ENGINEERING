@@ -6,19 +6,27 @@ import {
   EventRegistration, 
   UserClub,
   PointsHistory,
-  Badge,
   UserBadge,
   EventFeedback,
-  Notification,
-  ChatRoom,
-  ChatMessage,
-  AttendanceLog,
-  EventQRCode
 } from '@prisma/client';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  studentId?: string;
+  phone?: string;
+  department?: string;
+  yearOfStudy?: number;
+}
+
 
 // Extended Request type with user information
 export interface AuthenticatedRequest extends Request {
-  user?: User;
+  // user?: User;
+  user?: AuthUser;
   userId?: string;
   userRole?: string;
 }
@@ -104,6 +112,7 @@ export interface UpdateProfileData {
   department?: string;
   yearOfStudy?: number;
   profileImage?: string;
+  studentId?: string;
 }
 
 export interface ChangePasswordData {

@@ -1,5 +1,6 @@
 // client/src/components/events/EventFilters.tsx
-import React from 'react';
+// import React from 'react';
+import * as React from 'react';
 import { Search, Calendar, Filter, X } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';

@@ -121,6 +121,8 @@ export interface Event {
   createdBy: ID;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  registeredCount?: number;
+  registrationCount?: number;
 }
 
 // Event with additional details
@@ -337,21 +339,47 @@ export interface UpdateProfileForm {
 }
 
 // Filter interfaces
+// export interface EventFilters {
+//   search?: string;
+//   eventType?: EventType[];
+//   clubCategory?: ClubCategory[];
+//   skillAreas?: SkillArea[];
+//   dateRange?: {
+//     start?: string;
+//     end?: string;
+//   };
+//   pointsRange?: {
+//     min?: number;
+//     max?: number;
+//   };
+//   location?: string;
+//   isRegistrationOpen?: boolean;
+//   sortBy?: 'startDate' | 'title' | 'pointsReward' | 'registrationDeadline';
+//   sortOrder?: 'asc' | 'desc';
+// }
+
 export interface EventFilters {
   search?: string;
-  eventType?: EventType[];
+  clubId?: string;  // ADD THIS
+  category?: string;  // ADD THIS
+  eventType?: EventType[] | string;  // Make it accept both array and string
   clubCategory?: ClubCategory[];
-  skillAreas?: SkillArea[];
+  skillAreas?: SkillArea[] | string[];  // Make it accept both
   dateRange?: {
     start?: string;
     end?: string;
   };
+  startDate?: string;  // ADD THIS
+  endDate?: string;    // ADD THIS
+  tags?: string[];     // ADD THIS
   pointsRange?: {
     min?: number;
     max?: number;
   };
   location?: string;
   isRegistrationOpen?: boolean;
+  limit?: number;      // ADD THIS
+  offset?: number;     // ADD THIS
   sortBy?: 'startDate' | 'title' | 'pointsReward' | 'registrationDeadline';
   sortOrder?: 'asc' | 'desc';
 }

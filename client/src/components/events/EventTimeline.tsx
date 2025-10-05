@@ -1,10 +1,18 @@
-import React from 'react';
+// import React from 'react';
+import * as React from 'react';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Event } from '@/types/index';
-import { dateUtils } from '@/utils/dateUtils';
+
+// UI components: go up one folder to 'ui' (assuming 'someFolder' is inside 'components')
+import { Card, CardContent } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
+// Types: assuming 'types' is at 'client/src/types'
+import { Event } from '../../types';
+
+// Utils: assuming 'utils' is at 'client/src/utils'
+import { dateUtils } from '../../utils/dateUtils';
+
 
 interface EventTimelineProps {
   events: Event[];

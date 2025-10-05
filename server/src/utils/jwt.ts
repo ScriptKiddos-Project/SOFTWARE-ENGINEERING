@@ -1,7 +1,9 @@
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { JwtPayload, RefreshTokenPayload, TokenPair } from '../types/auth';
 import { User } from '@prisma/client';
+import jwt, { SignOptions, Secret } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 
 // JWT Configuration
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
@@ -90,12 +92,20 @@ export const createJwtPayload = (user: User): JwtPayload => {
 export const generateAccessToken = (user: User): string => {
   const payload = createJwtPayload(user);
   
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRE,
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-    algorithm: 'HS256',
-  });
+  // return jwt.sign(payload, JWT_SECRET, {
+  //   expiresIn: JWT_EXPIRE,
+  //   issuer: JWT_ISSUER,
+  //   audience: JWT_AUDIENCE,
+  //   algorithm: 'HS256',
+  // });
+  const options: SignOptions = {
+  expiresIn: JWT_EXPIRE  as StringValue,
+  issuer: JWT_ISSUER,
+  audience: JWT_AUDIENCE,
+  algorithm: 'HS256',
+};
+
+return jwt.sign(payload, JWT_SECRET as Secret, options);
 };
 
 /**
@@ -109,12 +119,14 @@ export const generateRefreshToken = (userId: string): string => {
     tokenId,
   };
   
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
-    expiresIn: JWT_REFRESH_EXPIRE,
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-    algorithm: 'HS256',
-  });
+  const options: SignOptions = {
+  expiresIn: JWT_EXPIRE as StringValue,
+  issuer: JWT_ISSUER,
+  audience: JWT_AUDIENCE,
+  algorithm: 'HS256',
+  };
+
+  return jwt.sign(payload, JWT_SECRET as Secret, options);
 };
 
 /**

@@ -1,10 +1,10 @@
-import React from 'react';
-import StatsCards from '@/components/dashboard/StatsCards';
-import ClubCategories from '@/components/dashboard/ClubCategories';
-import TopEvents from '@/components/dashboard/TopEvents';
-import QuickActions from '@/components/dashboard/QuickActions';
-import RecentActivity from '@/components/dashboard/RecentActivity';
-import { useAuth } from '@/hooks/useAuth';
+// import React from 'react';
+import StatsCards from '../components/dashboard/StatsCards';
+import ClubCategories from '../components/dashboard/ClubCategories';
+import TopEvents from '../components/dashboard/TopEvents';
+import QuickActions from '../components/dashboard/QuickActions';
+import RecentActivity from '../components/dashboard/RecentActivity';
+import { useAuth } from '../hooks/useAuth';
 
 const Dashboard = () => {
   const { user } = useAuth();

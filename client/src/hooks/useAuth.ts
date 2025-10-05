@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { authService } from '../services/authService';
-import { AuthUser, RegisterRequest, ResetPasswordRequest } from '../types/auth';
+import { AuthUser, User, RegisterRequest, ResetPasswordRequest } from '../types/auth';
 
 type RegisterData = RegisterRequest;
 
@@ -20,9 +20,32 @@ interface UseAuthReturn {
   resetPassword: (token: string, password: string) => Promise<void>;
 }
 
+// Helper function to convert User (snake_case) to AuthUser (camelCase)
+const convertToAuthUser = (user: User | null): AuthUser | null => {
+  if (!user) return null;
+  
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.first_name,
+    lastName: user.last_name,
+    studentId: user.student_id,
+    phone: user.phone,
+    department: user.department,
+    yearOfStudy: user.year_of_study,
+    role: user.role,
+    isVerified: user.is_verified,
+    profileImage: user.profile_image,
+    totalPoints: user.total_points,
+    totalVolunteerHours: user.total_volunteer_hours,
+    createdAt: new Date(user.created_at),
+    updatedAt: new Date(user.updated_at)
+  };
+};
+
 export const useAuth = (): UseAuthReturn => {
   const {
-    user,
+    user: storeUser,
     isAuthenticated,
     login: storeLogin,
     register: storeRegister,
@@ -32,6 +55,9 @@ export const useAuth = (): UseAuthReturn => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Convert store user (User) to AuthUser for component use
+  const user = useMemo(() => convertToAuthUser(storeUser), [storeUser]);
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -138,7 +164,7 @@ export const useAuth = (): UseAuthReturn => {
   }, []);
 
   return {
-    user: user as AuthUser | null,
+    user,
     isLoading,
     isAuthenticated,
     error,

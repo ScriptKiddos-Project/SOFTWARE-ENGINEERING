@@ -1,10 +1,16 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import * as React from 'react';
+
+// UI Components
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
+// Icons
 import { Users, Calendar, MapPin } from 'lucide-react';
-import { Club } from '@/types/club';
+
+// Types
+import { Club } from '../../types/club';
 
 interface ClubCardProps {
   club: Club;

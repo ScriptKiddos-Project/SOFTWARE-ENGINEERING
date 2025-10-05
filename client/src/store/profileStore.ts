@@ -160,7 +160,7 @@ export const useProfileStore = create<ProfileState>()(
             pointsHistory: [entry, ...state.pointsHistory],
             profile: state.profile ? {
               ...state.profile,
-              totalPoints: state.profile.totalPoints + (entry.pointsAwarded ?? 0)
+              totalPoints: state.profile.total_points + (entry.pointsAwarded ?? 0)
             } : null,
             stats: state.stats ? {
               ...state.stats,
@@ -201,7 +201,7 @@ export const useProfileStore = create<ProfileState>()(
             volunteerActivities: [activity, ...state.volunteerActivities],
             profile: state.profile ? {
               ...state.profile,
-              totalVolunteerHours: state.profile.totalVolunteerHours + activity.hoursAwarded
+              totalVolunteerHours: state.profile.total_volunteer_hours + activity.hoursAwarded
             } : null,
             stats: state.stats ? {
               ...state.stats,

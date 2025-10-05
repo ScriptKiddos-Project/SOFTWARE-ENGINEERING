@@ -278,3 +278,35 @@ export interface EventDashboardData {
   events_attended: number;
   upcoming_count: number;
 }
+
+// ...existing code...
+
+import { Router } from 'express';
+// Import your controller (adjust the path as needed)
+import { eventController } from '../controller/eventController';
+
+const eventRoutes = Router();
+
+// List all events
+eventRoutes.get('/', eventController.getAllEvents);
+
+// Get event by ID
+eventRoutes.get('/:id', eventController.getEventById);
+
+// Create a new event
+eventRoutes.post('/', eventController.createEvent);
+
+// Update an event
+eventRoutes.put('/:id', eventController.updateEvent);
+
+// Delete an event
+eventRoutes.delete('/:id', eventController.deleteEvent);
+
+// Register for an event
+eventRoutes.post('/:id/register', eventController.registerForEvent);
+
+// Mark attendance
+eventRoutes.post('/:id/attendance', eventController.markAttendance);
+
+// Export the router
+export default eventRoutes;

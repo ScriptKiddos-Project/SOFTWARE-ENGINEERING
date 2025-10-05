@@ -1,4 +1,5 @@
-import React from 'react';
+// import React from 'react';
+import * as React from 'react';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';

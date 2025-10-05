@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import * as React from 'react';
+
+// UI Components
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Badge } from '../ui/badge';
 import { Textarea } from '../ui/input';
 import { FormLabel as Label } from '../ui/form';
+
+// Icons
 import { Users, Calendar, Clock } from 'lucide-react';
-import type { Club } from '@/types/club';
+
+// Types
+import type { Club } from '../../types/club';
+
 
 interface JoinClubModalProps {
   club: Club | null;

@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Settings, Users, Calendar, Image, 
-  Save, Upload, Trash2, Edit3 
-} from 'lucide-react';
-import { Club } from '@/types/club';
+import { useState } from 'react';
+import * as React from 'react';
+// UI Components
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import { Badge } from '../ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+
+// Icons
+import { Users, Image, Save, Upload, Trash2 } from 'lucide-react';
+
+// Types
+import { Club } from '../../types/club';
+
+// Local Component
 import { ClubMembers } from './ClubMembers';
+
 
 interface ClubManagementProps {
   club: Club;

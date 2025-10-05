@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { ApiError } from '../utils/helpers';
-import { emailService } from './emailService';
-import { notificationService } from './notificationService';
+import { sendEmail } from './emailService';
+import { notificationService, NotificationType } from './notificationService';
 
 const prisma = new PrismaClient();
 
@@ -88,7 +88,7 @@ export class EventService {
 
     return events.map(event => ({
       ...event,
-      registration_count: event._count.eventRegistrations
+      registrationCount: event._count.eventRegistrations
     }));
   }
 
@@ -124,7 +124,7 @@ export class EventService {
     });
 
     if (!event) {
-      throw new ApiError(404, 'Event not found');
+      throw new ApiError('Event not found', 404);
     }
 
     let userRegistration = null;
@@ -141,71 +141,71 @@ export class EventService {
 
     return {
       ...event,
-      registration_count: event._count.eventRegistrations,
-      user_registration: userRegistration,
-      is_registered: !!userRegistration,
-      can_register: this.canUserRegister(event, userRegistration),
-      is_past: new Date() > event.endDate
+      registrationCount: event._count.eventRegistrations,
+      userRegistration: userRegistration,
+      isRegistered: !!userRegistration,
+      canRegister: this.canUserRegister(event, userRegistration),
+      isPast: new Date() > event.endDate
     };
   }
 
   async createEvent(eventData: {
     title: string;
     description?: string;
-    club_id: string;
-    event_type: string;
-    start_date: Date;
-    end_date: Date;
+    clubId: string;
+    eventType: string;
+    startDate: Date;
+    endDate: Date;
     location?: string;
-    max_participants?: number;
-    registration_deadline?: Date;
-    points_reward?: number;
-    volunteer_hours?: number;
-    image_url?: string;
+    maxParticipants?: number;
+    registrationDeadline?: Date;
+    pointsReward?: number;
+    volunteerHours?: number;
+    imageUrl?: string;
     tags?: string[];
-    skill_areas?: string[];
-    requires_approval?: boolean;
-    created_by: string;
+    skillAreas?: string[];
+    requiresApproval?: boolean;
+    createdBy: string;
   }) {
-    if (eventData.start_date >= eventData.end_date) {
-      throw new ApiError(400, 'End date must be after start date');
+    if (eventData.startDate >= eventData.endDate) {
+      throw new ApiError('End date must be after start date', 400);
     }
 
-    if (eventData.registration_deadline && eventData.registration_deadline > eventData.start_date) {
-      throw new ApiError(400, 'Registration deadline must be before event start date');
+    if (eventData.registrationDeadline && eventData.registrationDeadline > eventData.startDate) {
+      throw new ApiError('Registration deadline must be before event start date', 400);
     }
 
     const userClub = await prisma.userClub.findUnique({
       where: {
         userId_clubId: {
-          userId: eventData.created_by,
-          clubId: eventData.club_id
+          userId: eventData.createdBy,
+          clubId: eventData.clubId
         }
       }
     });
 
     if (!userClub || !['president', 'vice_president', 'secretary'].includes(userClub.role)) {
-      throw new ApiError(403, 'Insufficient permissions to create events for this club');
+      throw new ApiError('Insufficient permissions to create events for this club', 403);
     }
 
     const event = await prisma.event.create({
       data: {
         title: eventData.title,
         description: eventData.description,
-        clubId: eventData.club_id,
-        eventType: eventData.event_type as any,
-        startDate: eventData.start_date,
-        endDate: eventData.end_date,
+        clubId: eventData.clubId,
+        eventType: eventData.eventType as any,
+        startDate: eventData.startDate,
+        endDate: eventData.endDate,
         location: eventData.location,
-        maxParticipants: eventData.max_participants,
-        registrationDeadline: eventData.registration_deadline,
-        pointsReward: eventData.points_reward || 0,
-        volunteerHours: eventData.volunteer_hours || 0,
-        imageUrl: eventData.image_url,
+        maxParticipants: eventData.maxParticipants,
+        registrationDeadline: eventData.registrationDeadline,
+        pointsReward: eventData.pointsReward || 0,
+        volunteerHours: eventData.volunteerHours || 0,
+        imageUrl: eventData.imageUrl,
         tags: eventData.tags || [],
-        skillAreas: eventData.skill_areas || [],
-        requiresApproval: eventData.requires_approval || false,
-        createdBy: eventData.created_by,
+        skillAreas: eventData.skillAreas || [],
+        requiresApproval: eventData.requiresApproval || false,
+        createdBy: eventData.createdBy,
         isPublished: true
       },
       include: {
@@ -219,7 +219,8 @@ export class EventService {
       }
     });
 
-    await this.notifyClubMembers(event.clubId, 'new_event', {
+    await this.notifyClubMembers(event.clubId, {
+      eventId: event.id,
       eventTitle: event.title,
       clubName: event.club.name,
       startDate: event.startDate
@@ -237,7 +238,7 @@ export class EventService {
     });
 
     if (!event) {
-      throw new ApiError(404, 'Event not found');
+      throw new ApiError('Event not found', 404);
     }
 
     const userClub = await prisma.userClub.findUnique({
@@ -250,11 +251,11 @@ export class EventService {
     });
 
     if (!userClub || !['president', 'vice_president', 'secretary'].includes(userClub.role)) {
-      throw new ApiError(403, 'Insufficient permissions to update this event');
+      throw new ApiError('Insufficient permissions to update this event', 403);
     }
 
     if (new Date() > event.endDate) {
-      throw new ApiError(400, 'Cannot update past events');
+      throw new ApiError('Cannot update past events', 400);
     }
 
     const updatedEvent = await prisma.event.update({
@@ -291,7 +292,7 @@ export class EventService {
     });
 
     if (!event) {
-      throw new ApiError(404, 'Event not found');
+      throw new ApiError('Event not found', 404);
     }
 
     const userClub = await prisma.userClub.findUnique({
@@ -304,16 +305,16 @@ export class EventService {
     });
 
     if (!userClub || userClub.role !== 'president') {
-      throw new ApiError(403, 'Only club presidents can delete events');
+      throw new ApiError('Only club presidents can delete events', 403);
     }
 
     const daysTillEvent = Math.ceil((event.startDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
     if (event._count.eventRegistrations > 0 && daysTillEvent < 7) {
-      throw new ApiError(400, 'Cannot delete event with registrations less than 7 days before start date');
+      throw new ApiError('Cannot delete event with registrations less than 7 days before start date', 400);
     }
 
     if (event._count.eventRegistrations > 0) {
-      await this.notifyRegisteredUsers(eventId, 'event_cancelled', {
+      await this.notifyRegisteredUsers(eventId, {
         eventTitle: event.title,
         clubName: event.club.name,
         startDate: event.startDate
@@ -341,19 +342,19 @@ export class EventService {
     });
 
     if (!event) {
-      throw new ApiError(404, 'Event not found');
+      throw new ApiError('Event not found', 404);
     }
 
     if (!event.isPublished) {
-      throw new ApiError(400, 'Event is not published yet');
+      throw new ApiError('Event is not published yet', 400);
     }
 
     if (event.registrationDeadline && new Date() > event.registrationDeadline) {
-      throw new ApiError(400, 'Registration deadline has passed');
+      throw new ApiError('Registration deadline has passed', 400);
     }
 
     if (new Date() > event.startDate) {
-      throw new ApiError(400, 'Cannot register for event that has already started');
+      throw new ApiError('Cannot register for event that has already started', 400);
     }
 
     const existingRegistration = await prisma.eventRegistration.findUnique({
@@ -366,11 +367,11 @@ export class EventService {
     });
 
     if (existingRegistration) {
-      throw new ApiError(400, 'User is already registered for this event');
+      throw new ApiError('User is already registered for this event', 400);
     }
 
     if (event.maxParticipants && event._count.eventRegistrations >= event.maxParticipants) {
-      throw new ApiError(400, 'Event has reached maximum capacity');
+      throw new ApiError('Event has reached maximum capacity', 400);
     }
 
     const registration = await prisma.eventRegistration.create({
@@ -381,20 +382,7 @@ export class EventService {
       }
     });
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, firstName: true }
-    });
-
-    if (user) {
-      await emailService.sendEventRegistrationConfirmation(
-        user.email,
-        user.firstName,
-        event.title,
-        event.startDate,
-        event.location
-      );
-    }
+    await notificationService.notifyEventRegistration(userId, eventId);
 
     return registration;
   }
@@ -405,11 +393,11 @@ export class EventService {
     });
 
     if (!event) {
-      throw new ApiError(404, 'Event not found');
+      throw new ApiError('Event not found', 404);
     }
 
     if (new Date() > event.startDate) {
-      throw new ApiError(400, 'Cannot unregister from event that has already started');
+      throw new ApiError('Cannot unregister from event that has already started', 400);
     }
 
     const registration = await prisma.eventRegistration.findUnique({
@@ -422,7 +410,7 @@ export class EventService {
     });
 
     if (!registration) {
-      throw new ApiError(400, 'User is not registered for this event');
+      throw new ApiError('User is not registered for this event', 400);
     }
 
     await prisma.eventRegistration.delete({
@@ -444,7 +432,7 @@ export class EventService {
     });
 
     if (!event) {
-      throw new ApiError(404, 'Event not found');
+      throw new ApiError('Event not found', 404);
     }
 
     const userClub = await prisma.userClub.findUnique({
@@ -457,7 +445,7 @@ export class EventService {
     });
 
     if (!userClub || !['president', 'vice_president', 'secretary'].includes(userClub.role)) {
-      throw new ApiError(403, 'Insufficient permissions to view event registrations');
+      throw new ApiError('Insufficient permissions to view event registrations', 403);
     }
 
     const registrations = await prisma.eventRegistration.findMany({
@@ -556,70 +544,40 @@ export class EventService {
     return true;
   }
 
-  private async notifyClubMembers(clubId: string, type: string, data: any) {
+  private async notifyClubMembers(clubId: string, data: {
+    eventId: string;
+    eventTitle: string;
+    clubName: string;
+    startDate: Date;
+  }) {
     const members = await prisma.userClub.findMany({
       where: { 
         clubId: clubId,
         isActive: true
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true
-          }
-        }
+      select: {
+        userId: true
       }
     });
 
-    for (const member of members) {
-      await notificationService.createNotification({
-        user_id: member.user.id,
-        type,
-        title: `New Event: ${data.eventTitle}`,
-        message: `${data.clubName} has created a new event starting ${data.startDate.toLocaleDateString()}`,
-        data: {
-          clubId,
-          eventTitle: data.eventTitle
-        }
-      });
-    }
+    const userIds = members.map(m => m.userId);
+
+    await notificationService.createBulkNotifications({
+      userIds,
+      title: `New Event: ${data.eventTitle}`,
+      message: `${data.clubName} has created a new event starting ${data.startDate.toLocaleDateString()}`,
+      type: NotificationType.CLUB_ANNOUNCEMENT,
+      actionUrl: `/events/${data.eventId}`,
+      sendEmail: false
+    });
   }
 
-  private async notifyRegisteredUsers(eventId: string, type: string, data: any) {
-    const registrations = await prisma.eventRegistration.findMany({
-      where: { eventId: eventId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true
-          }
-        }
-      }
-    });
-
-    for (const registration of registrations) {
-      await notificationService.createNotification({
-        user_id: registration.user.id,
-        type,
-        title: `Event Cancelled: ${data.eventTitle}`,
-        message: `The event "${data.eventTitle}" by ${data.clubName} has been cancelled.`,
-        data: {
-          eventId,
-          eventTitle: data.eventTitle
-        }
-      });
-
-      await emailService.sendEventCancellationEmail(
-        registration.user.email,
-        registration.user.firstName,
-        data.eventTitle,
-        data.startDate
-      );
-    }
+  private async notifyRegisteredUsers(eventId: string, data: {
+    eventTitle: string;
+    clubName: string;
+    startDate: Date;
+  }) {
+    await notificationService.notifyEventCancellation(eventId);
   }
 }
 

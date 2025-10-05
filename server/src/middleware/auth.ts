@@ -186,7 +186,7 @@ export const requireRole = (...roles: UserRole[]) => {
       return;
     }
 
-    if (!roles.includes(req.userRole)) {
+    if (!roles.includes(req.userRole as UserRole)) {
       res.status(403).json({
         success: false,
         message: 'Insufficient permissions',

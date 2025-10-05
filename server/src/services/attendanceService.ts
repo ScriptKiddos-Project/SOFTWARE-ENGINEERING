@@ -1,344 +1,597 @@
-import { Response } from 'express';
-import { attendanceService } from '@/services/attendanceService';
-import { AuthenticatedRequest } from '@/types';
-import { HTTP_STATUS, RESPONSE_MESSAGES } from '@/utils/constants';
-import { catchAsync } from '@/middleware/errorHandler';
+import { PrismaClient } from '@prisma/client';
+import { AppError } from '../middleware/errorHandler';
+import { HTTP_STATUS, ERROR_MESSAGES } from '../utils/constants';
 
-export class AttendanceController {
-  // Mark individual attendance
-  markIndividualAttendance = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId, userId } = req.params;
-    const { attended, notes, checkInTime, checkOutTime } = req.body;
-    
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
+const prisma = new PrismaClient();
 
-    const result = await attendanceService.markAttendance(eventId, userId, {
-      attended,
-      markedBy: req.user.id,
-      method: 'manual',
-      notes,
-      checkInTime: checkInTime ? new Date(checkInTime) : undefined,
-      checkOutTime: checkOutTime ? new Date(checkOutTime) : undefined
+interface AttendanceData {
+  attended: boolean;
+  markedBy: string;
+  method: 'manual' | 'qr_code' | 'geofence' | 'biometric';
+  notes?: string;
+  checkInTime?: Date;
+  checkOutTime?: Date;
+}
+
+interface BulkAttendanceData {
+  userIds: string[];
+  attended: boolean;
+  markedBy: string;
+  method: 'manual' | 'qr_code' | 'geofence' | 'biometric';
+  notes?: string;
+  checkInTime?: Date;
+  checkOutTime?: Date;
+}
+
+interface AttendanceHistoryOptions {
+  page: number;
+  limit: number;
+  clubId?: string;
+  eventType?: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
+interface EventAttendanceOptions {
+  page: number;
+  limit: number;
+  search?: string;
+  status?: string;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+class AttendanceService {
+  // Check if user has permission to mark attendance
+  async checkAttendancePermission(userId: string, eventId: string): Promise<boolean> {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: { 
+        club: { 
+          include: { 
+            userClubs: true 
+          } 
+        } 
+      }
     });
 
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: RESPONSE_MESSAGES.SUCCESS.ATTENDANCE_MARKED,
-      data: result
-    });
-  });
+    if (!event) return false;
 
-  // Bulk attendance marking
-  markBulkAttendance = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId } = req.params;
-    const { userIds, attended, notes } = req.body;
+    // Check if user is event creator
+    if (event.createdBy === userId) return true;
 
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const result = await attendanceService.bulkUpdateAttendance(eventId, {
-      userIds,
-      attended,
-      markedBy: req.user.id,
-      method: 'manual',
-      notes
-    });
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: `Attendance updated for ${result.success.length} users`,
-      data: result
-    });
-  });
-
-  // Get attendance statistics
-  getEventAttendance = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId } = req.params;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const statistics = await attendanceService.getAttendanceStatistics(eventId, req.user.id);
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'Attendance statistics retrieved',
-      data: statistics
-    });
-  });
-
-  // Check in user
-  checkInUser = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId, userId } = req.params;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const result = await attendanceService.markAttendance(eventId, userId, {
-      attended: true,
-      markedBy: req.user.id,
-      method: 'manual',
-      checkInTime: new Date(),
-      notes: 'Manual check-in'
-    });
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'User checked in successfully',
-      data: result
-    });
-  });
-
-  // Check out user
-  checkOutUser = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId, userId } = req.params;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const result = await attendanceService.markAttendance(eventId, userId, {
-      attended: true,
-      markedBy: req.user.id,
-      method: 'manual',
-      checkOutTime: new Date(),
-      notes: 'Manual check-out'
-    });
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'User checked out successfully',
-      data: result
-    });
-  });
-
-  // Get attendance logs
-  getAttendanceLogs = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId } = req.params;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const logs = await attendanceService.getAttendanceLogs(eventId, req.user.id);
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'Attendance logs retrieved',
-      data: logs
-    });
-  });
-
-  // Generate attendance report
-  generateReport = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId } = req.params;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const report = await attendanceService.generateAttendanceReport(eventId, req.user.id);
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'Attendance report generated',
-      data: report
-    });
-  });
-
-  // Export attendance data
-  exportAttendanceData = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId } = req.params;
-    const { format = 'json' } = req.query;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const report = await attendanceService.generateAttendanceReport(eventId, req.user.id);
-
-    if (format === 'csv') {
-      // Convert to CSV format
-      const csv = this.convertToCSV(report);
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename=attendance-${eventId}.csv`);
-      res.send(csv);
-    } else {
-      res.status(HTTP_STATUS.OK).json({
-        success: true,
-        message: 'Attendance data exported',
-        data: report
-      });
-    }
-  });
-
-  // Mark attendance via QR code
-  markAttendanceByQR = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { qrCodeData } = req.body;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const result = await attendanceService.markAttendanceByQR(qrCodeData, req.user.id);
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'Attendance marked via QR code',
-      data: result
-    });
-  });
-
-  // Get user attendance history
-  getUserAttendanceHistory = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { userId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
-    }
-
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-
-    const history = await attendanceService.getUserAttendanceHistory(
-      userId,
-      { page: pageNum, limit: limitNum }
+    // Check if user is club admin (president or vice_president)
+    const userClubRole = event.club.userClubs.find(
+      uc => uc.userId === userId && ['president', 'vice_president'].includes(uc.role)
     );
+    
+    if (userClubRole) return true;
 
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'Attendance history retrieved',
-      data: history
+    // Check if user is super admin
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    return user?.role === 'super_admin';
+  }
+
+  // Mark individual attendance
+  async markAttendance(
+    eventId: string,
+    userId: string,
+    data: AttendanceData
+  ) {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
     });
-  });
 
-  // Update attendance status
-  updateAttendanceStatus = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { eventId, userId } = req.params;
-    const { status, notes } = req.body;
-
-    if (!req.user) {
-      res.status(HTTP_STATUS.UNAUTHORIZED).json({
-        success: false,
-        message: RESPONSE_MESSAGES.ERROR.UNAUTHORIZED
-      });
-      return;
+    if (!event) {
+      throw new AppError(ERROR_MESSAGES.EVENT_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
     }
 
-    const attended = status === 'attended' || status === 'present';
-
-    const result = await attendanceService.markAttendance(eventId, userId, {
-      attended,
-      markedBy: req.user.id,
-      method: 'manual',
-      notes
+    const registration = await prisma.eventRegistration.findUnique({
+      where: {
+        userId_eventId: {
+          userId: userId,
+          eventId: eventId
+        }
+      }
     });
 
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: 'Attendance status updated',
-      data: result
+    if (!registration) {
+      throw new AppError('User is not registered for this event', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const previousStatus = registration.attended;
+
+    const updatedRegistration = await prisma.eventRegistration.update({
+      where: {
+        userId_eventId: {
+          userId: userId,
+          eventId: eventId
+        }
+      },
+      data: {
+        attended: data.attended,
+        attendanceMarkedBy: data.markedBy,
+        attendanceMarkedAt: new Date(),
+        attendanceMethod: data.method,
+        checkInTime: data.checkInTime || registration.checkInTime,
+        checkOutTime: data.checkOutTime || registration.checkOutTime,
+        notes: data.notes,
+        status: data.attended ? 'attended' : 'no_show',
+        pointsAwarded: data.attended ? event.pointsReward : 0,
+        volunteerHoursAwarded: data.attended ? event.volunteerHours : 0
+      }
     });
-  });
 
-  // Validate QR code
-  validateQRCode = catchAsync(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    const { qrCodeData } = req.body;
+    // Update user's total points and hours
+    if (data.attended && !previousStatus) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          totalPoints: { increment: event.pointsReward },
+          totalVolunteerHours: { increment: Number(event.volunteerHours) }
+        }
+      });
+    } else if (!data.attended && previousStatus) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          totalPoints: { decrement: event.pointsReward },
+          totalVolunteerHours: { decrement: Number(event.volunteerHours) }
+        }
+      });
+    }
 
-    const validation = await attendanceService.validateQRCodePublic(qrCodeData);
-
-    res.status(HTTP_STATUS.OK).json({
-      success: true,
-      message: validation.isValid ? 'QR code is valid' : 'QR code is invalid or expired',
-      data: validation
+    // Log the attendance action
+    await prisma.attendanceLog.create({
+      data: {
+        eventId: eventId,
+        userId: userId,
+        markedBy: data.markedBy,
+        action: data.attended ? 'marked_present' : 'marked_absent',
+        previousStatus: previousStatus,
+        newStatus: data.attended,
+        reason: data.notes
+      }
     });
-  });
 
-  // Helper method to convert report to CSV
-  private convertToCSV(report: any): string {
-    const headers = [
-      'Student ID',
-      'Name',
-      'Email',
-      'Department',
-      'Year',
-      'Registration Date',
-      'Attended',
-      'Status',
-      'Check In Time',
-      'Check Out Time',
-      'Points Awarded',
-      'Volunteer Hours',
-      'Notes'
-    ];
+    return updatedRegistration;
+  }
 
-    const rows = report.registrations.map((reg: any) => [
-      reg.user.student_id || '',
-      `${reg.user.first_name} ${reg.user.last_name}`,
-      reg.user.email,
-      reg.user.department || '',
-      reg.user.year_of_study || '',
-      new Date(reg.registration_date).toLocaleDateString(),
-      reg.attended ? 'Yes' : 'No',
-      reg.status,
-      reg.check_in_time ? new Date(reg.check_in_time).toLocaleString() : '',
-      reg.check_out_time ? new Date(reg.check_out_time).toLocaleString() : '',
-      reg.points_awarded || 0,
-      reg.volunteer_hours_awarded || 0,
-      reg.notes || ''
+  // Bulk attendance update
+  async bulkUpdateAttendance(
+    eventId: string,
+    data: BulkAttendanceData
+  ) {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId }
+    });
+
+    if (!event) {
+      throw new AppError(ERROR_MESSAGES.EVENT_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    const results = {
+      success: [] as string[],
+      failed: [] as { userId: string; reason: string }[]
+    };
+
+    for (const userId of data.userIds) {
+      try {
+        await this.markAttendance(eventId, userId, {
+          attended: data.attended,
+          markedBy: data.markedBy,
+          method: data.method,
+          notes: data.notes,
+          checkInTime: data.checkInTime,
+          checkOutTime: data.checkOutTime
+        });
+        results.success.push(userId);
+      } catch (error) {
+        results.failed.push({
+          userId,
+          reason: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return results;
+  }
+
+  // Get event attendance with pagination
+  async getEventAttendance(eventId: string, options: EventAttendanceOptions) {
+    const { page, limit, search, status, sortBy, sortOrder } = options;
+    const skip = (page - 1) * limit;
+
+    const where: any = { eventId };
+
+    if (search) {
+      where.user = {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } }
+        ]
+      };
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    const [registrations, total] = await Promise.all([
+      prisma.eventRegistration.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              studentId: true,
+              department: true,
+              yearOfStudy: true
+            }
+          }
+        },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder }
+      }),
+      prisma.eventRegistration.count({ where })
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row: any[]) => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
+    return { registrations, total };
+  }
 
-    return csvContent;
+  // Get attendance statistics
+  async getAttendanceStatistics(eventId: string) {
+    const registrations = await prisma.eventRegistration.findMany({
+      where: { eventId }
+    });
+
+    const total = registrations.length;
+    const attended = registrations.filter(r => r.attended).length;
+    const absent = total - attended;
+    const attendanceRate = total > 0 ? ((attended / total) * 100).toFixed(2) : '0.00';
+
+    const totalPointsAwarded = registrations.reduce(
+      (sum, r) => sum + (r.pointsAwarded || 0),
+      0
+    );
+
+    const totalHoursAwarded = registrations.reduce(
+      (sum, r) => sum + Number(r.volunteerHoursAwarded || 0),
+      0
+    );
+
+    return {
+      total_registered: total,
+      total_attended: attended,
+      total_absent: absent,
+      attendance_rate: parseFloat(attendanceRate),
+      total_points_awarded: totalPointsAwarded,
+      total_volunteer_hours_awarded: totalHoursAwarded
+    };
+  }
+
+  // Get attendance logs
+  async getAttendanceLogs(eventId: string, options: { page: number; limit: number; userId?: string }) {
+    const { page, limit, userId } = options;
+    const skip = (page - 1) * limit;
+
+    const where: any = { eventId };
+    if (userId) {
+      where.userId = userId;
+    }
+
+    const [logs, total] = await Promise.all([
+      prisma.attendanceLog.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          markedByUser: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.attendanceLog.count({ where })
+    ]);
+
+    return { logs, total };
+  }
+
+  // Generate attendance report
+  async generateAttendanceReport(eventId: string, options: any) {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        club: true,
+        eventRegistrations: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                studentId: true,
+                department: true,
+                yearOfStudy: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!event) {
+      throw new AppError(ERROR_MESSAGES.EVENT_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    return {
+      event: {
+        id: event.id,
+        title: event.title,
+        date: event.startDate,
+        club: event.club.name
+      },
+      statistics: await this.getAttendanceStatistics(eventId),
+      registrations: event.eventRegistrations.map(reg => ({
+        user: reg.user,
+        registration_date: reg.registrationDate,
+        attended: reg.attended,
+        status: reg.status,
+        check_in_time: reg.checkInTime,
+        check_out_time: reg.checkOutTime,
+        points_awarded: reg.pointsAwarded,
+        volunteer_hours_awarded: reg.volunteerHoursAwarded,
+        notes: reg.notes
+      }))
+    };
+  }
+
+  // Mark attendance via QR code
+  async markAttendanceByQR(qrCodeData: string, userId: string) {
+    const qrCode = await prisma.eventQRCode.findFirst({
+      where: {
+        qrCodeData: qrCodeData,
+        isActive: true,
+        validFrom: { lte: new Date() },
+        validUntil: { gte: new Date() }
+      }
+    });
+
+    if (!qrCode) {
+      throw new AppError('Invalid or expired QR code', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    if (qrCode.maxScans && qrCode.currentScans >= qrCode.maxScans) {
+      throw new AppError('QR code scan limit reached', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const result = await this.markAttendance(qrCode.eventId, userId, {
+      attended: true,
+      markedBy: userId,
+      method: 'qr_code',
+      checkInTime: new Date(),
+      notes: 'Marked via QR code scan'
+    });
+
+    await prisma.eventQRCode.update({
+      where: { id: qrCode.id },
+      data: { currentScans: { increment: 1 } }
+    });
+
+    return result;
+  }
+
+  // Validate QR code
+  async validateQRCodePublic(qrCodeData: string) {
+    const qrCode = await prisma.eventQRCode.findFirst({
+      where: {
+        qrCodeData: qrCodeData,
+        isActive: true
+      },
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+            startDate: true,
+            endDate: true
+          }
+        }
+      }
+    });
+
+    if (!qrCode) {
+      return { isValid: false, message: 'QR code not found' };
+    }
+
+    const now = new Date();
+    if (now < qrCode.validFrom || now > qrCode.validUntil) {
+      return { isValid: false, message: 'QR code has expired' };
+    }
+
+    if (qrCode.maxScans && qrCode.currentScans >= qrCode.maxScans) {
+      return { isValid: false, message: 'QR code scan limit reached' };
+    }
+
+    return {
+      isValid: true,
+      message: 'QR code is valid',
+      event: qrCode.event
+    };
+  }
+
+  // Get user attendance history
+  async getUserAttendanceHistory(userId: string, options: AttendanceHistoryOptions) {
+    const { page, limit, clubId, eventType, startDate, endDate } = options;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      userId: userId,
+      attended: true
+    };
+
+    if (clubId || eventType || startDate || endDate) {
+      where.event = {};
+      if (clubId) where.event.clubId = clubId;
+      if (eventType) where.event.eventType = eventType;
+      if (startDate || endDate) {
+        where.event.startDate = {};
+        if (startDate) where.event.startDate.gte = startDate;
+        if (endDate) where.event.startDate.lte = endDate;
+      }
+    }
+
+    const [attendance, total] = await Promise.all([
+      prisma.eventRegistration.findMany({
+        where,
+        include: {
+          event: {
+            include: {
+              club: {
+                select: {
+                  id: true,
+                  name: true,
+                  category: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { attendanceMarkedAt: 'desc' },
+        skip,
+        take: limit
+      }),
+      prisma.eventRegistration.count({ where })
+    ]);
+
+    return { attendance, total };
+  }
+
+  // Export attendance data
+  async exportAttendanceData(eventId: string, format: 'csv' | 'excel') {
+    const report = await this.generateAttendanceReport(eventId, {});
+    
+    if (format === 'csv') {
+      // Generate CSV
+      const headers = ['Student ID', 'Name', 'Email', 'Department', 'Year', 'Attended', 'Check In', 'Check Out', 'Points', 'Hours'];
+      const rows = report.registrations.map((reg: any) => [
+        reg.user.studentId || '',
+        `${reg.user.firstName} ${reg.user.lastName}`,
+        reg.user.email,
+        reg.user.department || '',
+        reg.user.yearOfStudy || '',
+        reg.attended ? 'Yes' : 'No',
+        reg.check_in_time || '',
+        reg.check_out_time || '',
+        reg.points_awarded || 0,
+        reg.volunteer_hours_awarded || 0
+      ]);
+      
+      return [headers, ...rows].map(row => row.join(',')).join('\n');
+    }
+    
+    return report;
+  }
+
+  // Check in user
+  async checkInUser(eventId: string, userId: string, markedBy: string, notes?: string) {
+    return this.markAttendance(eventId, userId, {
+      attended: true,
+      markedBy,
+      method: 'manual',
+      checkInTime: new Date(),
+      notes: notes || 'Manual check-in'
+    });
+  }
+
+  // Check out user
+  async checkOutUser(eventId: string, userId: string, markedBy: string, notes?: string) {
+    const registration = await prisma.eventRegistration.findUnique({
+      where: {
+        userId_eventId: {
+          userId,
+          eventId
+        }
+      }
+    });
+
+    if (!registration || !registration.attended || !registration.checkInTime) {
+      throw new AppError('User must be checked in before checking out', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    return this.markAttendance(eventId, userId, {
+      attended: true,
+      markedBy,
+      method: 'manual',
+      checkInTime: registration.checkInTime,
+      checkOutTime: new Date(),
+      notes: notes || 'Manual check-out'
+    });
+  }
+
+  // Mark individual attendance (alternative signature for controller)
+async markIndividualAttendance(
+  eventId: string,
+  userId: string,
+  attended: boolean,
+  markedBy: string,
+  options: {
+    method: 'manual' | 'qr_code' | 'geofence' | 'biometric';
+    checkInTime?: Date;
+    checkOutTime?: Date;
+    notes?: string;
+  }
+) {
+  return this.markAttendance(eventId, userId, {
+    attended,
+    markedBy,
+    method: options.method,
+    checkInTime: options.checkInTime,
+    checkOutTime: options.checkOutTime,
+    notes: options.notes
+  });
+}
+
+  // Update attendance status
+  async updateAttendanceStatus(
+    eventId: string,
+    userId: string,
+    attended: boolean,
+    markedBy: string,
+    options: { notes?: string; reason?: string }
+  ) {
+    return this.markAttendance(eventId, userId, {
+      attended,
+      markedBy,
+      method: 'manual',
+      notes: options.notes || options.reason
+    });
+  }
+
+  // Validate QR code (alias for controller compatibility)
+  async validateQRCode(qrData: string) {
+    return this.validateQRCodePublic(qrData);
   }
 }
+
+export const attendanceService = new AttendanceService();

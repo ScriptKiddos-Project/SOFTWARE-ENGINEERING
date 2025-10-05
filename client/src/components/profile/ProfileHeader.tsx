@@ -1,10 +1,15 @@
-import React from 'react';
+// import React from 'react';
 import { Camera, Edit, Mail, Phone, Calendar, MapPin } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User } from '@/types/user';
+
+// UI components
+import { Card, CardContent } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
+// Types
+import { User } from '../../types/user';
+
 
 interface ProfileHeaderProps {
   user: User;
@@ -41,9 +46,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <div className="flex flex-col sm:flex-row items-start gap-6 -mt-16">
           <div className="relative">
             <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
-              <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
+              <AvatarImage src={user.profile_image} alt={`${user.first_name} ${user.last_name}`} />
               <AvatarFallback className="text-3xl">
-                {user.firstName[0]}{user.lastName[0]}
+                {user.first_name[0]}{user.last_name[0]}
               </AvatarFallback>
             </Avatar>
             {isOwnProfile && (
@@ -61,18 +66,18 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                  {user.firstName} {user.lastName}
+                  {user.first_name} {user.last_name}
                 </h1>
-                <p className="text-gray-600">{user.studentId}</p>
+                <p className="text-gray-600">{user.student_id}</p>
               </div>
               
               <div className="flex items-center gap-4 mt-4 sm:mt-0">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{user.totalPoints}</div>
+                  <div className="text-2xl font-bold text-blue-600">{user.total_points}</div>
                   <div className="text-xs text-gray-500">AICTE Points</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{user.totalVolunteerHours}h</div>
+                  <div className="text-2xl font-bold text-green-600">{user.total_volunteer_hours}h</div>
                   <div className="text-xs text-gray-500">Volunteer Hours</div>
                 </div>
               </div>
@@ -86,10 +91,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 </div>
               )}
               
-              {user.yearOfStudy && (
+              {user.year_of_study && (
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  <span>Year {user.yearOfStudy}</span>
+                  <span>Year {user.year_of_study}</span>
                 </div>
               )}
               
@@ -108,7 +113,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">{user.role}</Badge>
-              {user.isVerified && (
+              {user.is_verified && (
                 <Badge className="bg-green-100 text-green-800">Verified</Badge>
               )}
             </div>

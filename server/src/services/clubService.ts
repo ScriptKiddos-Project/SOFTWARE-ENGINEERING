@@ -160,7 +160,7 @@ export class ClubService {
             include: {
               _count: {
                 select: {
-                  registrations: true
+                  eventRegistrations: true
                 }
               }
             }
@@ -170,7 +170,7 @@ export class ClubService {
 
       if (!club) return null;
 
-      const members = club.userClubs.map(uc => ({
+      const members = club.userClubs.map((uc: any) => ({
         id: uc.id,
         userId: uc.userId,
         clubId: uc.clubId,
@@ -180,7 +180,7 @@ export class ClubService {
         user: uc.user
       }));
 
-      const events = club.events.map((event) => ({
+      const clubEvents = club.events.map((event: any) => ({
         id: event.id,
         title: event.title,
         description: event.description,
@@ -195,14 +195,14 @@ export class ClubService {
         registeredCount: event._count.registrations
       }));
 
-      const admins = members.filter(member => 
+      const admins = members.filter((member: any) => 
         member.role === 'president' || member.role === 'vice_president'
       );
 
       return {
         ...club,
         members,
-        events,
+        events: clubEvents,
         admins
       };
     } catch (error) {
@@ -230,7 +230,7 @@ export class ClubService {
         where: { id: clubId },
         data: {
           ...updateData,
-          socialLinks: updateData.socialLinks || {},
+          // socialLinks: updateData.socialLinks || {},
           updatedAt: new Date()
         }
       });
@@ -581,14 +581,14 @@ export class ClubService {
         include: {
           _count: {
             select: {
-              registrations: true
+              eventRegistrations: true
             }
           }
         }
       });
 
       const averageAttendance = eventAttendance.length > 0
-        ? eventAttendance.reduce((sum, event) => sum + event._count.registrations, 0) / eventAttendance.length
+        ? eventAttendance.reduce((sum, event) => sum + event._count.eventRegistrations, 0) / eventAttendance.length
         : 0;
 
       // Get points and volunteer hours distributed

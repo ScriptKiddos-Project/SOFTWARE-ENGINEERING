@@ -1,18 +1,20 @@
 import { Router } from 'express';
-import { userController } from '../controllers/userController';
-import { auth, requireRole } from '../middleware/auth';
+import { UserController } from '../controller/userController';
+import { requireRole } from '../middleware/auth';
+import * as auth from '../middleware/auth';
 import { upload } from '../middleware/upload';
 // Replace missing rateLimiter with simple wrapper
 import rateLimit from 'express-rate-limit';
 const rateLimiter = (max: number, windowSeconds: number) => rateLimit({ windowMs: windowSeconds * 1000, max });
 
 const router = Router();
+const userController = new UserController();
 
 // Public routes (no authentication required)
 router.get('/dashboard-stats', userController.getDashboardStats);
 
 // Protected routes (authentication required)
-router.use(auth);
+router.use(auth.authMiddleware);
 
 // User profile routes
 router.get('/profile', userController.getProfile);
@@ -28,26 +30,26 @@ router.get('/:id', userController.getUserById);
 
 // Admin only routes
 router.get('/', 
-  requireRole(['admin', 'super_admin']), 
-  userController.getAllUsers
+  requireRole('super_admin'), 
+  userController.getUsers.bind(userController)
 );
 
 router.put('/:id/role', 
-  requireRole(['super_admin']), 
+  requireRole('super_admin'), 
   userController.updateUserRole
 );
 
 router.delete('/:id', 
-  requireRole(['super_admin']), 
+  requireRole('super_admin'), 
   userController.deleteUser
 );
 
-router.put('/:id/status', 
-  requireRole(['admin', 'super_admin']), 
-  userController.updateUserStatus
-);
+// router.put('/:id/status', 
+//   requireRole('admin', 'super_admin'), 
+//   userController.updateUserStatus
+// );
 
-// User statistics and analytics
-router.get('/:id/stats', userController.getUserStats);
+// // User statistics and analytics
+// router.get('/:id/stats', userController.getUserStats);
 
 export default router;

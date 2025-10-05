@@ -271,3 +271,6 @@ export const cleanupOnError = (req: Request, res: Response, next: NextFunction) 
   
   next();
 };
+
+// export const uploadMiddleware = uploadConfigs.profileImage;
+export const uploadMiddleware = upload.single('profileImage');

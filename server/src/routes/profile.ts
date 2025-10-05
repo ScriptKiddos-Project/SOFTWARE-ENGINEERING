@@ -1,24 +1,25 @@
 import { Router } from 'express';
-import { ProfileController } from '../controllers/profileController';
-import { authenticateToken } from '../middleware/auth';
-import { uploadMiddleware } from '../middleware/upload';
-import { rateLimitMiddleware } from '../middleware/rateLimiter';
+import { ProfileController } from '../controller/profileController';
+import { authMiddleware } from '../middleware/auth';
+// import { uploadMiddleware } from '../middleware/upload';
+import { upload } from '../middleware/upload';
+import { rateLimiter } from '../middleware/rateLimiter'; // <-- FIXED IMPORT
 
 const router = Router();
 const profileController = new ProfileController();
 
 // Apply authentication to all routes
-router.use(authenticateToken);
+router.use(authMiddleware);
 
 // Basic profile routes
 router.get('/me', profileController.getMyProfile);
 router.get('/user/:userId', profileController.getProfileById);
-router.put('/me', rateLimitMiddleware({ windowMs: 15 * 60 * 1000, max: 10 }), profileController.updateProfile);
+router.put('/me', rateLimiter, profileController.updateProfile); // <-- FIXED
 
 // Profile picture upload
 router.post('/me/picture', 
-  uploadMiddleware.single('profilePicture'), 
-  rateLimitMiddleware({ windowMs: 60 * 60 * 1000, max: 5 }), // 5 uploads per hour
+  upload.single('profilePicture'), 
+  rateLimiter, // <-- FIXED
   profileController.updateProfilePicture
 );
 
@@ -39,19 +40,19 @@ router.get('/me/leaderboard', profileController.getLeaderboardPosition);
 
 // Preferences and settings
 router.get('/me/preferences', profileController.getPreferences);
-router.put('/me/preferences', rateLimitMiddleware({ windowMs: 15 * 60 * 1000, max: 20 }), profileController.updatePreferences);
+router.put('/me/preferences', rateLimiter, profileController.updatePreferences); // <-- FIXED
 
 // Recommendations
 router.get('/me/recommendations', profileController.getRecommendations);
 
 // Data management (GDPR compliance)
 router.get('/me/export', 
-  rateLimitMiddleware({ windowMs: 24 * 60 * 60 * 1000, max: 3 }), // 3 exports per day
+  rateLimiter, // <-- FIXED
   profileController.exportData
 );
 
 router.delete('/me', 
-  rateLimitMiddleware({ windowMs: 24 * 60 * 60 * 1000, max: 1 }), // 1 delete attempt per day
+  rateLimiter, // <-- FIXED
   profileController.deleteAccount
 );
 

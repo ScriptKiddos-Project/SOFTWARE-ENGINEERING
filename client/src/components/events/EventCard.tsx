@@ -1,8 +1,13 @@
-import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+// import React from 'react';
+import * as React from 'react';
+
+// UI components - go up one folder, then into ui
+import { Card, CardContent, CardHeader } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+
+// Icons (external package, keep as is)
 import { 
   Calendar, 
   MapPin, 
@@ -13,7 +18,10 @@ import {
   Heart,
   Share2
 } from 'lucide-react';
-import { formatDate } from '@/utils/dateUtils';
+
+// Utils - go up two folders, then into utils
+import { formatDate } from '../../utils/dateUtils';
+
 
 interface Event {
   id: string;

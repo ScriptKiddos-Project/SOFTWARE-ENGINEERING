@@ -1,8 +1,12 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
+// import React from 'react';
+
+// UI Components
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+
+// Icons
+import {
   Code, 
   Palette, 
   Music, 
@@ -13,7 +17,10 @@ import {
   ChevronRight,
   TrendingUp
 } from 'lucide-react';
+
+// Router
 import { useNavigate } from 'react-router-dom';
+
 
 const ClubCategories = () => {
   const navigate = useNavigate();

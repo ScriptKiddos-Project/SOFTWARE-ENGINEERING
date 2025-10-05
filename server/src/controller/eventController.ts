@@ -110,13 +110,24 @@ export class EventController {
 
       // Convert string dates to Date objects
       const eventData = {
-        ...validatedData,
-        start_date: new Date(validatedData.start_date),
-        end_date: new Date(validatedData.end_date),
-        registration_deadline: validatedData.registration_deadline 
+        title: validatedData.title,
+        description: validatedData.description,
+        clubId: validatedData.club_id,  // Transform snake_case to camelCase
+        eventType: validatedData.event_type,
+        startDate: new Date(validatedData.start_date),
+        endDate: new Date(validatedData.end_date),
+        location: validatedData.location,
+        maxParticipants: validatedData.max_participants,
+        registrationDeadline: validatedData.registration_deadline 
           ? new Date(validatedData.registration_deadline) 
           : undefined,
-        created_by: userId
+        pointsReward: validatedData.points_reward,
+        volunteerHours: validatedData.volunteer_hours,
+        imageUrl: validatedData.image_url,
+        tags: validatedData.tags,
+        skillAreas: validatedData.skill_areas,
+        requiresApproval: validatedData.requires_approval,
+        createdBy: userId
       };
 
       const event = await eventService.createEvent(eventData);
@@ -399,7 +410,7 @@ export class EventController {
         throw new AppError('Invalid event ID', 400);
       }
 
-      const statistics = await attendanceService.getAttendanceStatistics(id, userId);
+      const statistics = await attendanceService.getAttendanceStatistics(id);
 
       res.json({
         success: true,
@@ -550,7 +561,7 @@ export class EventController {
       const registration = await eventService.getEventRegistrations(id, userId);
       const userRegistration = registration.find((r: any) => r.user_id === user_id);
 
-      if (!userRegistration || !userRegistration.attended || !userRegistration.check_in_time) {
+      if (!userRegistration || !userRegistration.attended || !userRegistration.checkInTime) {
         throw new AppError('User must be checked in before checking out', 400);
       }
 
@@ -558,7 +569,7 @@ export class EventController {
         attended: true,
         markedBy: userId,
         method: 'manual',
-        checkInTime: userRegistration.check_in_time,
+        checkInTime: userRegistration.checkInTime,
         checkOutTime: new Date(),
         notes: notes || 'Manual check-out by organizer'
       });

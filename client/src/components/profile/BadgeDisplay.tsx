@@ -1,9 +1,16 @@
-import React from 'react';
+// import React from 'react';
 import { Award, Star, Trophy, Medal } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { UserBadge } from '@/types/user';
-import { formatDate } from '@/utils/dateUtils';
+
+// UI components - up one level then into ui
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
+
+// Types - up two levels to src/types
+import { UserBadge } from '../../types/user';
+
+// Utils - up two levels to src/utils
+import { formatDate } from '../../utils/dateUtils';
+
 
 interface BadgeDisplayProps {
   badges: UserBadge[];

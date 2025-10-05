@@ -1,4 +1,4 @@
-import { prisma } from '../config/database';
+import prisma from '../config/database';
 import { hashPassword, verifyPasswordSecure, validatePasswordConfirmation } from '../utils/bcrypt';
 import { uploadImage } from './fileService';
 import { sendEmail } from './emailService';
@@ -8,6 +8,7 @@ import {
   UserDashboardStats,
   Activity
 } from '../types';
+
 
 export class ProfileError extends Error {
   constructor(message: string, public code: string, public statusCode: number = 400) {
@@ -80,14 +81,6 @@ export const getUserProfile = async (userId: string) => {
       pointsHistory: {
         take: 10,
         orderBy: { createdAt: 'desc' },
-        include: {
-          event: {
-            select: {
-              title: true,
-              startDate: true
-            }
-          }
-        }
       },
       userBadges: {
         include: {
@@ -254,7 +247,7 @@ export const getUserClubs = async (userId: string) => {
     orderBy: { joinedAt: 'desc' }
   });
 
-  return userClubs.map(uc => ({
+  return userClubs.map((uc: any)=> ({
     ...uc.club,
     memberRole: uc.role,
     joinedAt: uc.joinedAt,
@@ -301,19 +294,6 @@ export const getUserEvents = async (userId: string, filter: 'upcoming' | 'past' 
 export const getPointsHistory = async (userId: string, limit: number = 50) => {
   const pointsHistory = await prisma.pointsHistory.findMany({
     where: { userId },
-    include: {
-      event: {
-        select: {
-          title: true,
-          startDate: true,
-          club: {
-            select: {
-              name: true
-            }
-          }
-        }
-      }
-    },
     orderBy: { createdAt: 'desc' },
     take: limit
   });
@@ -350,14 +330,14 @@ export const getVolunteerHours = async (userId: string) => {
   });
 
   // Calculate hours by category
-  const hoursByCategory = hoursData.reduce((acc, reg) => {
+  const hoursByCategory = hoursData.reduce((acc: any, reg: any) => {
     const category = reg.event.club.category;
     acc[category] = (acc[category] || 0) + Number(reg.volunteerHoursAwarded);
     return acc;
   }, {} as Record<string, number>);
 
   // Calculate hours by month for trends
-  const hoursByMonth = hoursData.reduce((acc, reg) => {
+  const hoursByMonth = hoursData.reduce((acc: any, reg: any) => {
     if (reg.attendanceMarkedAt) {
       const month = reg.attendanceMarkedAt.toISOString().substring(0, 7);
       acc[month] = (acc[month] || 0) + Number(reg.volunteerHoursAwarded);
@@ -366,7 +346,7 @@ export const getVolunteerHours = async (userId: string) => {
   }, {} as Record<string, number>);
 
   return {
-    totalHours: hoursData.reduce((sum, reg) => sum + Number(reg.volunteerHoursAwarded), 0),
+    totalHours: hoursData.reduce((sum: any, reg: any) => sum + Number(reg.volunteerHoursAwarded), 0),
     hoursByCategory,
     hoursByMonth,
     recentActivities: hoursData.slice(0, 10)
@@ -450,7 +430,7 @@ export const getDashboardStats = async (userId: string): Promise<UserDashboardSt
     totalVolunteerHours: Number(user.totalVolunteerHours),
     joinedClubs: clubsCount,
     attendedEvents: attendedEventsCount,
-    upcomingEvents: upcomingEvents.map(reg => reg.event),
+    upcomingEvents: upcomingEvents.map((reg: any) => reg.event),
     recentActivities,
     earnedBadges: recentBadges
   };
@@ -507,7 +487,7 @@ export const getRecentActivities = async (userId: string, limit: number = 20): P
   });
 
   // Convert to activities
-  recentRegistrations.forEach(reg => {
+  recentRegistrations.forEach((reg: any)=> {
     activities.push({
       id: `reg-${reg.id}`,
       type: 'event_registration',
@@ -518,7 +498,7 @@ export const getRecentActivities = async (userId: string, limit: number = 20): P
     });
   });
 
-  recentClubJoins.forEach(join => {
+  recentClubJoins.forEach((join: any )=> {
     activities.push({
       id: `club-${join.id}`,
       type: 'club_join',
@@ -529,7 +509,7 @@ export const getRecentActivities = async (userId: string, limit: number = 20): P
     });
   });
 
-  recentBadges.forEach(badge => {
+  recentBadges.forEach((badge: any) => {
     activities.push({
       id: `badge-${badge.id}`,
       type: 'badge_earned',
@@ -568,7 +548,7 @@ export const checkAndAwardBadges = async (userId: string) => {
     select: { badgeId: true }
   });
 
-  const earnedBadgeIds = new Set(userBadges.map(ub => ub.badgeId));
+  const earnedBadgeIds = new Set(userBadges.map((ub: any)=> ub.badgeId));
   const newBadges: string[] = [];
 
   for (const badge of badges) {
@@ -669,4 +649,20 @@ export const deleteUserAccount = async (userId: string, password: string) => {
   }
 
   return { message: 'Account deleted successfully' };
+};
+
+export const profileService = {
+  getUserProfile,
+  updateUserProfile,
+  changePassword,
+  uploadProfileImage,
+  getUserClubs,
+  getUserEvents,
+  getPointsHistory,
+  getVolunteerHours,
+  getUserBadges,
+  getDashboardStats,
+  getRecentActivities,
+  checkAndAwardBadges,
+  deleteUserAccount
 };

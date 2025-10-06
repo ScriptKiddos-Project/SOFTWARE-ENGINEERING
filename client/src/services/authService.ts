@@ -75,13 +75,13 @@ class AuthService {
     return ApiService.post<AuthResponse>('/auth/refresh', { refreshToken });
   }
 
-  // User profile endpoints
+  // User profile endpoints - FIXED: Changed from /auth/me to /profile/me
   async getCurrentUser(): Promise<User> {
-    return ApiService.get<User>('/auth/me');
+    return ApiService.get<User>('/profile/me');
   }
 
   async updateProfile(data: Partial<User>): Promise<User> {
-    return ApiService.patch<User>('/auth/profile', data);
+    return ApiService.patch<User>('/profile/me', data);
   }
 
   // Password management
@@ -106,14 +106,14 @@ class AuthService {
     return ApiService.post<{ message: string }>('/auth/verify-email', { token });
   }
 
-  // Profile image upload
+  // Profile image upload - FIXED: Changed endpoint
   async uploadAvatar(file: File, onProgress?: (progress: number) => void): Promise<{ imageUrl: string }> {
-    return ApiService.uploadFile<{ imageUrl: string }>('/auth/upload-avatar', file, onProgress);
+    return ApiService.uploadFile<{ imageUrl: string }>('/profile/me/picture', file, onProgress);
   }
 
   // Account management
   async deleteAccount(password: string): Promise<{ message: string }> {
-    return ApiService.post<{ message: string }>('/auth/delete-account', { password });
+    return ApiService.post<{ message: string }>('/profile/me', { confirmPassword: password });
   }
 
   async deactivateAccount(): Promise<{ message: string }> {

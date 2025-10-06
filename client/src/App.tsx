@@ -1,4 +1,3 @@
-// import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Layout from './components/layout/Layout';
@@ -20,11 +19,18 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  const { user, isAuthenticated, checkAuth } = useAuthStore();
+  const { user, isAuthenticated, isLoading } = useAuthStore();
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  // Don't check auth here - it's done in the parent App component
+  // This was causing the issue - multiple checkAuth calls
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -43,7 +49,15 @@ interface PublicRouteProps {
 }
 
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -56,9 +70,9 @@ const App: React.FC = () => {
   const { checkAuth, isLoading } = useAuthStore();
 
   useEffect(() => {
-    // Check authentication status on app load
+    // Check authentication status on app load ONLY ONCE
     checkAuth();
-  }, [checkAuth]);
+  }, []); // Empty dependency array - only run once on mount
 
   if (isLoading) {
     return (
@@ -104,7 +118,7 @@ const App: React.FC = () => {
             <Route path="events" element={<Events />} />
             <Route path="events/:id" element={<EventDetail />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="clubs/:id" element={<ClubDetail />} />
+            <Route path="clubs" element={<ClubDetail />} />
             
             {/* Admin Routes */}
             <Route

@@ -221,7 +221,7 @@ export const getNotificationTypeColor = (type: Notification['type']): string => 
     case 'club':
       return 'text-green-600 bg-green-50';
     case 'achievement':
-      return 'text-yellow-600 bg-yellow-50';
+      return 'text-yellow-600 bg-blue-50';
     case 'system':
       return 'text-gray-600 bg-gray-50';
     default:

@@ -12,46 +12,46 @@ const profileController = new ProfileController();
 router.use(authMiddleware);
 
 // Basic profile routes
-router.get('/me', profileController.getMyProfile);
+router.get('/profile/me', profileController.getMyProfile);
 router.get('/user/:userId', profileController.getProfileById);
-router.put('/me', rateLimiter, profileController.updateProfile); // <-- FIXED
+router.put('profile/me', rateLimiter, profileController.updateProfile); // <-- FIXED
 
 // Profile picture upload
-router.post('/me/picture', 
+router.post('profile/me/picture', 
   upload.single('profilePicture'), 
   rateLimiter, // <-- FIXED
   profileController.updateProfilePicture
 );
 
 // Clubs and events
-router.get('/me/clubs', profileController.getMyClubs);
-router.get('/me/events', profileController.getMyEvents);
+router.get('profile/me/clubs', profileController.getMyClubs);
+router.get('profile/me/events', profileController.getMyEvents);
 
 // Points and achievements
-router.get('/me/points', profileController.getPointsHistory);
-router.get('/me/volunteer-hours', profileController.getVolunteerHours);
-router.get('/me/badges', profileController.getBadges);
-router.get('/me/achievements', profileController.getAchievements);
+router.get('profile/me/points', profileController.getPointsHistory);
+router.get('profile/me/volunteer-hours', profileController.getVolunteerHours);
+router.get('profile/me/badges', profileController.getBadges);
+router.get('profile/me/achievements', profileController.getAchievements);
 
 // Activity and stats
-router.get('/me/activity', profileController.getActivityTimeline);
-router.get('/me/stats', profileController.getStats);
-router.get('/me/leaderboard', profileController.getLeaderboardPosition);
+router.get('profile/me/activity', profileController.getActivityTimeline);
+router.get('profile/me/stats', profileController.getStats);
+router.get('profile/me/leaderboard', profileController.getLeaderboardPosition);
 
 // Preferences and settings
-router.get('/me/preferences', profileController.getPreferences);
-router.put('/me/preferences', rateLimiter, profileController.updatePreferences); // <-- FIXED
+router.get('profile/me/preferences', profileController.getPreferences);
+router.put('profile/me/preferences', rateLimiter, profileController.updatePreferences); // <-- FIXED
 
 // Recommendations
-router.get('/me/recommendations', profileController.getRecommendations);
+router.get('profile/me/recommendations', profileController.getRecommendations);
 
 // Data management (GDPR compliance)
-router.get('/me/export', 
+router.get('profile/me/export', 
   rateLimiter, // <-- FIXED
   profileController.exportData
 );
 
-router.delete('/me', 
+router.delete('profile/me', 
   rateLimiter, // <-- FIXED
   profileController.deleteAccount
 );

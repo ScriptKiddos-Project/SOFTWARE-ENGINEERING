@@ -170,7 +170,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({
             <CardTitle className="text-sm font-medium text-gray-600">
               Campus Rank
             </CardTitle>
-            <div className="p-2 bg-yellow-100 rounded-lg">
+            <div className="p-2 bg-blue-600 rounded-lg">
               <Star className="h-5 w-5 text-yellow-600" />
             </div>
           </CardHeader>
@@ -184,7 +184,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({
                   Among all students
                 </p>
               </div>
-              <Badge variant="outline" className="text-xs text-yellow-600 bg-yellow-50">
+              <Badge variant="outline" className="text-xs text-yellow-600 bg-blue-50">
                 <Trophy className="h-3 w-3 mr-1" />
                 Top 10%
               </Badge>

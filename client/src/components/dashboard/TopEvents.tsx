@@ -53,7 +53,7 @@ const TopEvents: React.FC<TopEventsProps> = ({
   const getRegistrationStatus = (current: number, max: number) => {
     const percentage = (current / max) * 100;
     if (percentage >= 90) return { status: 'high', color: 'bg-red-500' };
-    if (percentage >= 70) return { status: 'medium', color: 'bg-yellow-500' };
+    if (percentage >= 70) return { status: 'medium', color: 'bg-blue-500' };
     return { status: 'low', color: 'bg-green-500' };
   };
 

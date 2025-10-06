@@ -177,7 +177,7 @@ export class AdminController {
   }
 
   // Club management
-  async getAllClubs(req: AuthRequest, res: Response, next: NextFunction) {
+  async getClubs(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       this.checkAdminAccess(req.user);
 
@@ -189,7 +189,7 @@ export class AdminController {
         isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined
       };
 
-      const clubs = await adminService.getAllClubs(filters, Number(page), Number(limit));
+      const clubs = await adminService.getClubs(filters, Number(page), Number(limit));
 
       res.json({
         success: true,

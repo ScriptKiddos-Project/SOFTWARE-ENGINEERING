@@ -165,7 +165,7 @@ Refreshments will be provided. Certificate of participation will be awarded to a
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      upcoming: 'bg-blue-100 text-blue-800',
+      upcoming: 'bg-blue-600 text-blue-800',
       ongoing: 'bg-green-100 text-green-800',
       completed: 'bg-gray-100 text-gray-800',
       cancelled: 'bg-red-100 text-red-800'
@@ -369,7 +369,7 @@ Refreshments will be provided. Certificate of participation will be awarded to a
                         <p className="text-sm font-medium text-gray-900 mb-2">Skills You'll Learn</p>
                         <div className="flex flex-wrap gap-2">
                           {event.skillAreas.map((skill, index) => (
-                            <Badge key={index} className="bg-blue-100 text-blue-800">
+                            <Badge key={index} className="bg-blue-600 text-blue-800">
                               {skill}
                             </Badge>
                           ))}
@@ -389,7 +389,7 @@ Refreshments will be provided. Certificate of participation will be awarded to a
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
                       {event.clubLogo ? (
                         <img src={event.clubLogo} alt={event.clubName} className="w-full h-full object-cover rounded-lg" />
                       ) : (
@@ -429,7 +429,7 @@ Refreshments will be provided. Certificate of participation will be awarded to a
                     </p>
                   </div>
                 ) : isWaitlisted ? (
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="p-4 bg-blue-50 border border-yellow-200 rounded-lg">
                     <div className="flex items-center gap-2 text-yellow-800 mb-2">
                       <Clock className="w-5 h-5" />
                       <span className="font-medium">You're Waitlisted</span>
@@ -469,7 +469,7 @@ Refreshments will be provided. Certificate of participation will be awarded to a
                     </p>
                   </div>
                 ) : isFull() ? (
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="p-4 bg-blue-50 border border-yellow-200 rounded-lg">
                     <div className="flex items-center gap-2 text-yellow-800 mb-2">
                       <AlertCircle className="w-5 h-5" />
                       <span className="font-medium">Event Full</span>

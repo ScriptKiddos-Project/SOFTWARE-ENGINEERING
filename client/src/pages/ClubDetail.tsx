@@ -180,10 +180,10 @@ const ClubDetail: React.FC = () => {
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
-      technical: 'bg-blue-100 text-blue-800',
+      technical: 'bg-blue-600 text-blue-800',
       cultural: 'bg-purple-100 text-purple-800',
       sports: 'bg-green-100 text-green-800',
-      academic: 'bg-yellow-100 text-yellow-800',
+      academic: 'bg-blue-600 text-yellow-800',
       social_service: 'bg-pink-100 text-pink-800'
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
@@ -403,7 +403,7 @@ const ClubDetail: React.FC = () => {
                       onClick={() => navigate(`/events/${event.id}`)}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
                           <Calendar className="w-8 h-8 text-blue-600" />
                         </div>
                         <div>

@@ -12,6 +12,9 @@ import eventRoutes from './routes/events';
 import profileRoutes from './routes/profile';
 import adminRoutes from './routes/admin';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const app = express();
 
 // Security middleware
@@ -37,6 +40,8 @@ const globalLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
+
+
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

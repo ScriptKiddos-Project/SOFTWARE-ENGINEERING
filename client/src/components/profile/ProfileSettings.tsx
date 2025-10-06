@@ -331,7 +331,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user }) => {
                 )}
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-yellow-200 rounded-lg p-4">
                 <p className="text-sm text-yellow-800">
                   Make sure your new password is at least 8 characters long and contains a mix of letters, numbers, and special characters.
                 </p>

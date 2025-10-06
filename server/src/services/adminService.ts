@@ -365,7 +365,7 @@ export class AdminService {
     }
   }
 
-  async getAllClubs(filters: any, page: number, limit: number) {
+  async getClubs(filters: any, page: number, limit: number) {
     try {
       const skip = (page - 1) * limit;
       const where: any = {};

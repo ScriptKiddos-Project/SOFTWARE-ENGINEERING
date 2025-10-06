@@ -146,7 +146,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
             <Button
               key={action.id}
               variant={action.variant}
-              className="h-auto p-4 flex flex-col items-start text-left space-y-2 hover:scale-[1.02] transition-transform"
+              className="h-auto p-4 flex flex-col items-start text-left space-y-2 hover:scale-[1.02] transition-transform text-wrap"
               onClick={action.onClick}
               disabled={action.disabled}
             >

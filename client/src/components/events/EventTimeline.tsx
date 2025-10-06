@@ -102,7 +102,7 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({
                           </Badge>
                         )}
                         {event.volunteerHours > 0 && (
-                          <Badge className="bg-blue-100 text-blue-800 text-xs">
+                          <Badge className="bg-blue-600 text-blue-800 text-xs">
                             {event.volunteerHours}h volunteer
                           </Badge>
                         )}

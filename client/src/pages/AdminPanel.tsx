@@ -326,14 +326,14 @@ const AdminPanel: React.FC = () => {
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'super_admin': return 'bg-red-100 text-red-800';
-      case 'club_admin': return 'bg-blue-100 text-blue-800';
+      case 'club_admin': return 'bg-blue-600 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'upcoming': return 'bg-blue-100 text-blue-800';
+      case 'upcoming': return 'bg-blue-600 text-blue-800';
       case 'ongoing': return 'bg-green-100 text-green-800';
       case 'completed': return 'bg-gray-100 text-gray-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
@@ -508,7 +508,7 @@ const AdminPanel: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                    <div className="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full">
                       <Calendar className="w-4 h-4 text-blue-600" />
                     </div>
                     <div className="flex-1">
@@ -703,7 +703,7 @@ const AdminPanel: React.FC = () => {
                         <tr key={club.id} className="border-b hover:bg-gray-50">
                           <td className="py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                                 <Building2 className="w-5 h-5 text-blue-600" />
                               </div>
                               <div>

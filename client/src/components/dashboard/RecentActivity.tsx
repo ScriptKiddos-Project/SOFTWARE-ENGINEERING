@@ -64,7 +64,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
       case 'club_joined':
         return 'text-purple-600 bg-purple-50';
       case 'points_earned':
-        return 'text-yellow-600 bg-yellow-50';
+        return 'text-yellow-600 bg-blue-50';
       case 'badge_earned':
         return 'text-orange-600 bg-orange-50';
       case 'event_created':

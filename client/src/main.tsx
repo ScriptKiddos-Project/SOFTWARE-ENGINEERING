@@ -3,6 +3,11 @@ import * as ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/globals.css';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Optional: React Query Devtools (helpful in development)
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
 // Error boundary for the entire application
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -19,8 +24,6 @@ class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Application Error:', error, errorInfo);
-    // Log to error reporting service (Sentry, LogRocket, etc.)
-    // logErrorToService(error, errorInfo);
   }
 
   render() {
@@ -69,6 +72,9 @@ class ErrorBoundary extends React.Component<
   }
 }
 
+// ✅ Create QueryClient instance
+const queryClient = new QueryClient();
+
 // Initialize React 18 root
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -76,8 +82,12 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <App />
+        {/* Optional: React Query Devtools */}
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ErrorBoundary>
+    </QueryClientProvider>
   </React.StrictMode>
 );

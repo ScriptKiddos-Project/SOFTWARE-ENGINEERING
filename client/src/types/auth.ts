@@ -182,3 +182,34 @@ export interface LogoutAllSessionsResponse {
   message: string;
   sessionsTerminated: number;
 }
+
+// ✅ Utility: Map backend User (snake_case) to frontend AuthUser (camelCase)
+export const mapUserToAuthUser = (user: User): AuthUser => ({
+  id: user.id,
+  email: user.email,
+  firstName: user.first_name,
+  lastName: user.last_name,
+  studentId: user.student_id,
+  phone: user.phone,
+  department: user.department,
+  yearOfStudy: user.year_of_study,
+  role: user.role,
+  isVerified: user.is_verified,
+  profileImage: user.profile_image,
+  totalPoints: user.total_points,
+  totalVolunteerHours: user.total_volunteer_hours,
+  createdAt: new Date(user.created_at),
+  updatedAt: new Date(user.updated_at),
+});
+
+// ✅ Utility: Convert frontend RegisterRequest to backend payload format
+export const toBackendRegisterPayload = (data: RegisterRequest) => ({
+  email: data.email,
+  password: data.password,
+  first_name: data.firstName,
+  last_name: data.lastName,
+  student_id: data.studentId,
+  phone: data.phone,
+  department: data.department,
+  year_of_study: data.yearOfStudy,
+});

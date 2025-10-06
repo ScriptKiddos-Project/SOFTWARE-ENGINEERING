@@ -27,7 +27,8 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  
+  hydrated: boolean; // ✅ added
+
   // Actions
   login: (email: string, password: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
@@ -57,6 +58,7 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
+      hydrated: false, // ✅ initialized
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
@@ -158,7 +160,6 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          // Try to get current user with existing token
           const user = await authService.getCurrentUser();
           
           set({
@@ -167,7 +168,6 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false
           });
         } catch (error: any) {
-          // If token is expired, try to refresh
           if (error.response?.status === 401 && refreshToken) {
             try {
               await get().refreshAuth();
@@ -218,7 +218,11 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated
-      })
+      }),
+      // ✅ hydration hook
+      // onRehydrateStorage: () => (state) => {
+      //   state?.set({ hydrated: true });
+      // }
     }
   )
 );

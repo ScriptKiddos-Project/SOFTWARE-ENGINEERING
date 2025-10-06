@@ -105,7 +105,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick }) => {
           {/* Overlay badges */}
           <div className="absolute top-3 left-3 flex flex-wrap gap-2">
             {event.featured && (
-              <Badge className="bg-yellow-500 text-yellow-50">
+              <Badge className="bg-blue-500 text-yellow-50">
                 Featured
               </Badge>
             )}

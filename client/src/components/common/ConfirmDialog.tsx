@@ -46,7 +46,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       case 'danger':
         return `${base} border-transparent text-white bg-red-600 hover:bg-red-700 focus:ring-red-500`;
       case 'warning':
-        return `${base} border-transparent text-white bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500`;
+        return `${base} border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-yellow-500`;
       case 'success':
         return `${base} border-transparent text-white bg-green-600 hover:bg-green-700 focus:ring-green-500`;
       default:
@@ -57,7 +57,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const getBgColor = () => {
     switch (type) {
       case 'warning':
-        return 'bg-yellow-50';
+        return 'bg-blue-50';
       case 'danger':
         return 'bg-red-50';
       case 'success':

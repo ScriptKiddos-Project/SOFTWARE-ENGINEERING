@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     {
       name: 'Profile',
-      href: '/profile',
+      href: '/profile/me',
       icon: User,
     },
   ];
@@ -67,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     {
       name: 'Join Club',
       icon: PlusCircle,
-      color: 'text-blue-600 bg-blue-50 hover:bg-blue-100',
+      color: 'text-blue-600 bg-blue-50 hover:bg-blue-600',
     },
     {
       name: 'Register Event',

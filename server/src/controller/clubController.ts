@@ -53,7 +53,7 @@ const memberFiltersSchema = z.object({
 });
 
 const updateMemberRoleSchema = z.object({
-  role: z.enum(['member', 'coordinator', 'admin'])
+  role: z.enum(['member', 'coordinator', 'admin', 'super_admin'])
 });
 
 class ClubController {
@@ -67,7 +67,7 @@ class ClubController {
     }
   }
 
-  async getAllClubs(req: AuthRequest, res: Response, next: NextFunction) {
+  async getClubs(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const filters = validateRequest(clubFiltersSchema, req.query);
       const { page, limit, ...clubFilters } = filters;

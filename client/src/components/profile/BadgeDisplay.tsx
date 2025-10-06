@@ -35,8 +35,8 @@ export const BadgeDisplay: React.FC<BadgeDisplayProps> = ({
 
   const getBadgeColor = (badgeType: string) => {
     const colors = {
-      participation: 'bg-blue-100 text-blue-800 border-blue-200',
-      leadership: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      participation: 'bg-blue-600 text-blue-800 border-blue-200',
+      leadership: 'bg-blue-600 text-yellow-800 border-yellow-200',
       volunteer: 'bg-green-100 text-green-800 border-green-200',
       achievement: 'bg-purple-100 text-purple-800 border-purple-200'
     };

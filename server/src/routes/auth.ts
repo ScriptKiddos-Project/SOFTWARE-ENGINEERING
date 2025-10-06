@@ -99,11 +99,11 @@ router.get('/check', optionalAuth, authController.checkAuth);
 router.post('/logout', authMiddleware, authController.logout);
 
 /**
- * @route   GET /api/auth/me
+ * @route   GET /api/profile/me
  * @desc    Get current user profile
  * @access  Protected
  */
-router.get('/me', authMiddleware, authController.me);
+router.get('profile/me', authMiddleware, authController.me);
 
 /**
  * @route   POST /api/auth/resend-verification

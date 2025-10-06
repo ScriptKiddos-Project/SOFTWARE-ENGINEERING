@@ -55,7 +55,7 @@ apiClient.interceptors.response.use(
 
       try {
         // Try to refresh the token
-        const { refreshAuth, refreshToken, clearAuth } = useAuthStore.getState();
+        const { refreshAuth, refreshToken } = useAuthStore.getState();
         
         if (refreshToken) {
           await refreshAuth();
@@ -65,14 +65,16 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         } else {
           // No refresh token available, clear auth
+          // DON'T redirect here - let React Router handle it
+          const { clearAuth } = useAuthStore.getState();
           clearAuth();
-          window.location.href = '/login';
+          throw error; // Throw error to let the calling code handle it
         }
       } catch (refreshError) {
-        // Refresh failed, clear auth and redirect
+        // Refresh failed, clear auth
+        // DON'T redirect here - let React Router handle it
         const { clearAuth } = useAuthStore.getState();
         clearAuth();
-        window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
@@ -99,7 +101,10 @@ apiClient.interceptors.response.use(
           toast.error('Server error. Please try again later.');
           break;
         default:
-          toast.error(data.message || 'An error occurred');
+          // Don't show toast for 401 errors - they're handled by the interceptor
+          if (status !== 401) {
+            toast.error(data.message || 'An error occurred');
+          }
       }
       
       console.error(`❌ API Error: ${status}`, data);

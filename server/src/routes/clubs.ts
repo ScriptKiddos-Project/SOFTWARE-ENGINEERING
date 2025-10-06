@@ -12,7 +12,7 @@ const createRateLimiter = (max: number, windowMs: number) =>
 
 // Public routes (no authentication required)
 router.get('/categories', clubController.getClubCategories);
-router.get('/', clubController.getAllClubs);
+router.get('/', clubController.getClubs);
 router.get('/:id', clubController.getClubById);
 
 // Protected routes (authentication required)

@@ -161,7 +161,7 @@ const ClubCategories = () => {
             <Button 
               variant="outline" 
               size="sm"
-              className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              className="border-blue-300 text-blue-700 hover:bg-blue-600"
             >
               Suggest Club
             </Button>

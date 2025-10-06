@@ -38,10 +38,10 @@ export const JoinedClubs: React.FC<JoinedClubsProps> = ({
 
   const getRoleBadge = (role: string) => {
     const roleColors = {
-      president: 'bg-yellow-100 text-yellow-800',
+      president: 'bg-blue-600 text-yellow-800',
       vice_president: 'bg-orange-100 text-orange-800',
       admin: 'bg-red-100 text-red-800',
-      secretary: 'bg-blue-100 text-blue-800',
+      secretary: 'bg-blue-600 text-blue-800',
       treasurer: 'bg-green-100 text-green-800',
       coordinator: 'bg-purple-100 text-purple-800',
       member: 'bg-gray-100 text-gray-800'

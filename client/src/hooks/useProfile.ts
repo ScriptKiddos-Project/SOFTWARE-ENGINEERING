@@ -1,4 +1,3 @@
-// client/src/hooks/useProfile.ts
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
@@ -7,7 +6,7 @@ import { useAuthStore } from '../store/authStore';
 
 export const useProfile = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
+  const { user, hydrated } = useAuthStore(); // ✅ added `hydrated`
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -17,15 +16,15 @@ export const useProfile = () => {
   } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: () => profileService.getProfile(),
-    enabled: !!user,
+    enabled: hydrated && !!user, // ✅ hydration check
   });
 
   const {
     data: joinedClubsData,
   } = useQuery({
     queryKey: ['myClubs', user?.id],
-    queryFn: () => profileService.getMyClubs(), // Changed from getJoinedClubs
-    enabled: !!user,
+    queryFn: () => profileService.getMyClubs(),
+    enabled: hydrated && !!user, // ✅ hydration check
   });
 
   const {
@@ -33,7 +32,7 @@ export const useProfile = () => {
   } = useQuery({
     queryKey: ['pointsHistory', user?.id],
     queryFn: () => profileService.getPointsHistory(),
-    enabled: !!user,
+    enabled: hydrated && !!user, // ✅ hydration check
   });
 
   const updateProfileMutation = useMutation({
@@ -71,7 +70,7 @@ export const useProfile = () => {
       }
       try {
         setIsLoading(true);
-        await profileService.uploadAvatar(file); // Changed from updateProfileImage
+        await profileService.uploadAvatar(file);
         queryClient.invalidateQueries({ queryKey: ['profile'] });
         toast.success('Profile image updated successfully');
         return true;

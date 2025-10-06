@@ -25,7 +25,7 @@ router.post('/users/:userId/suspend', createRateLimiter({ windowMs: 15 * 60 * 10
 router.put('/users/:userId/points', createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 }), adminController.adjustUserPoints);
 
 // Club management
-router.get('/clubs', adminController.getAllClubs);
+router.get('/clubs', adminController.getClubs);
 router.get('/clubs/:clubId', adminController.getClubById);
 router.put('/clubs/:clubId/status', createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }), adminController.updateClubStatus);
 

@@ -10,7 +10,8 @@ import Profile from './pages/Profile';
 import ClubDetail from './pages/ClubDetail';
 import AdminPanel from './pages/AdminPanel';
 import { useAuthStore } from './store/authStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -21,20 +22,9 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
   const { user, isAuthenticated, isLoading } = useAuthStore();
 
-  // Don't check auth here - it's done in the parent App component
-  // This was causing the issue - multiple checkAuth calls
-  
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingSpinner />;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   if (requiredRole && user?.role !== requiredRole && user?.role !== 'super_admin') {
     return <Navigate to="/dashboard" replace />;
@@ -43,7 +33,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   return <>{children}</>;
 };
 
-// Public Route Component (redirect if already logged in)
+// Public Route Component
 interface PublicRouteProps {
   children: React.ReactNode;
 }
@@ -51,36 +41,27 @@ interface PublicRouteProps {
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuthStore();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingSpinner />;
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 };
 
 const App: React.FC = () => {
-  const { checkAuth, isLoading } = useAuthStore();
+  const { checkAuth, isLoading, isAuthenticated } = useAuthStore();
+  const [authChecked, setAuthChecked] = useState(false); // NEW: track if checkAuth completed
 
   useEffect(() => {
-    // Check authentication status on app load ONLY ONCE
-    checkAuth();
-  }, []); // Empty dependency array - only run once on mount
+    const initAuth = async () => {
+      await checkAuth();
+      setAuthChecked(true);
+    };
+    initAuth();
+  }, []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  // Wait until auth is checked to prevent premature redirects
+  if (!authChecked) return <LoadingSpinner />;
 
   return (
     <Router>
@@ -119,7 +100,7 @@ const App: React.FC = () => {
             <Route path="events/:id" element={<EventDetail />} />
             <Route path="profile" element={<Profile />} />
             <Route path="clubs" element={<ClubDetail />} />
-            
+
             {/* Admin Routes */}
             <Route
               path="admin"
@@ -135,7 +116,7 @@ const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
 
-        {/* Global Toast Notifications (using sonner) */}
+        {/* Global Toast Notifications */}
         <Toaster position="top-right" />
       </div>
     </Router>

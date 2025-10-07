@@ -257,23 +257,23 @@ export interface ChatRoom {
 }
 
 // API response interfaces
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  errors?: string[];
-}
+// export interface ApiResponse<T = any> {
+//   success: boolean;
+//   data?: T;
+//   message?: string;
+//   errors?: string[];
+// }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrevious: boolean;
-  };
-}
+// export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+//   pagination: {
+//     page: number;
+//     pageSize: number;
+//     total: number;
+//     totalPages: number;
+//     hasNext: boolean;
+//     hasPrevious: boolean;
+//   };
+// }
 
 // Form interfaces
 export interface LoginForm {

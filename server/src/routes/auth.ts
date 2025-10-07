@@ -103,7 +103,7 @@ router.post('/logout', authMiddleware, authController.logout);
  * @desc    Get current user profile
  * @access  Protected
  */
-router.get('profile/me', authMiddleware, authController.me);
+router.get('/profile/me', authMiddleware, authController.me);
 
 /**
  * @route   POST /api/auth/resend-verification

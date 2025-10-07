@@ -1,13 +1,16 @@
 // API-related types and interfaces
+import { Club } from '../types/club';
+
 
 // Base API response structure
 export interface ApiResponse<T = any> {
-  success: boolean;
   data?: T;
   message?: string;
   error?: string;
   errors?: ValidationError[];
   meta?: ResponseMeta;
+  clubs: Club[],
+  total: number;
 }
 
 export interface ResponseMeta {

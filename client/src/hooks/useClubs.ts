@@ -73,7 +73,8 @@ export const useClubs = (filters?: ClubFilters) => {
   }, []);
 
   return {
-    clubs: clubsData?.data || [],
+    clubs: clubsData?.clubs || [],
+    total: clubsData?.total || 0,
     isLoading,
     error: error as Error | null,
     refetch,

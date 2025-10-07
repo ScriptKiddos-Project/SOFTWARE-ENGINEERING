@@ -111,6 +111,7 @@ export const createBulkNotifications = async (data: BulkNotificationData) => {
           subject: title,
           template: 'notification',
           data: {
+            email: user.email,  
             firstName: user.firstName,
             title,
             message,

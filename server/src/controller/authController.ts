@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+// import { authService } from '../services/authService';
 import { authService } from '../services/authService';
 import { UserService } from '../services/userService';
 import { emailService } from '../services/emailService';
@@ -113,7 +114,12 @@ export class AuthController {
 
     // Send verification email
     try {
-      await this.emailService.sendVerificationEmail(user);
+      const verificationLink = await this.authService.generateVerificationToken(user);
+      await this.emailService.sendVerificationEmail({
+        email: user.email,
+        firstName: user.firstName,
+        verificationLink
+      });
       logger.info(`Verification email sent to ${user.email}`);
     } catch (error) {
       logger.error('Failed to send verification email:', error);

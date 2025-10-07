@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Users, User, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import useDebounce from './hooks/useDebounce';
+import useDebounce from '../../hooks/useDebounce';
 
 interface SearchResult {
   id: string;

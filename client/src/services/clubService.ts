@@ -1,10 +1,20 @@
 import { api } from './api';
 import { Club, ClubMember, ClubFilters, CreateClubData, UpdateClubData } from '../types/club';
 import { ApiResponse } from '../types/api';
+// import { ApiService } from './api';
+
+export interface ClubListResponse {
+  clubs: Club[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 
 export const clubService = {
   // Get all clubs with optional filters
-  getClubs: async (filters?: ClubFilters): Promise<ApiResponse<Club[]>> => {
+  getClubs: async (filters?: ClubFilters): Promise<ApiResponse<ClubListResponse>> => {
     const params = new URLSearchParams();
     
     if (filters) {

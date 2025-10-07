@@ -14,6 +14,7 @@ export class emailService {
       subject: 'Verify your email address',
       template: 'email-verification',
       data: {
+        email: user.email,  
         firstName: user.firstName,
         verificationLink: user.verificationLink
       }
@@ -26,6 +27,7 @@ export class emailService {
       subject: 'Reset your password',
       template: 'password-reset',
       data: {
+        email: user.email,  
         firstName: user.firstName,
         resetLink: user.resetLink
       }

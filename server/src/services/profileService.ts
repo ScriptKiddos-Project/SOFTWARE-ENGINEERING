@@ -182,6 +182,7 @@ export const changePassword = async (userId: string, passwordData: ChangePasswor
       subject: 'Password Changed Successfully',
       template: 'password-changed',
       data: {
+        email: user.email,  
         timestamp: new Date().toLocaleString()
       }
     });
@@ -641,6 +642,7 @@ export const deleteUserAccount = async (userId: string, password: string) => {
       subject: 'Account Deleted Successfully',
       template: 'account-deleted',
       data: {
+        email: user.email,  
         timestamp: new Date().toLocaleString()
       }
     });

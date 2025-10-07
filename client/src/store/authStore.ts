@@ -27,7 +27,6 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  hydrated: boolean; // ✅ added
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -58,17 +57,35 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
-      hydrated: false, // ✅ initialized
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
           const response = await authService.login({ email, password });
           
+          // ✅ FIXED: Map backend field names to frontend
+          const user = {
+            id: response.user.id,
+            email: response.user.email,
+            first_name: response.user.first_name,
+            last_name: response.user.last_name,
+            student_id: response.user.student_id,
+            phone: response.user.phone,
+            department: response.user.department,
+            year_of_study: response.user.year_of_study,
+            role: response.user.role,
+            is_verified: response.user.is_verified,
+            profile_image: response.user.profile_image,
+            total_points: response.user.total_points,
+            total_volunteer_hours: response.user.total_volunteer_hours,
+            created_at: response.user.created_at || new Date().toISOString(),
+            updated_at: response.user.updated_at || new Date().toISOString()
+          };
+
           set({
-            user: response.user,
-            token: response.token,
-            refreshToken: response.refreshToken,
+            user,
+            token: response.accessToken, // ✅ FIXED: accessToken instead of token
+            refreshToken: response.refreshToken || null,
             isAuthenticated: true,
             isLoading: false
           });
@@ -87,10 +104,29 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await authService.register(userData);
           
+          // ✅ FIXED: Map backend field names to frontend
+          const user = {
+            id: response.user.id,
+            email: response.user.email,
+            first_name: response.user.first_name,
+            last_name: response.user.last_name,
+            student_id: response.user.student_id,
+            phone: response.user.phone,
+            department: response.user.department,
+            year_of_study: response.user.year_of_study,
+            role: response.user.role,
+            is_verified: response.user.is_verified,
+            profile_image: response.user.profile_image,
+            total_points: response.user.total_points,
+            total_volunteer_hours: response.user.total_volunteer_hours,
+            created_at: response.user.created_at || new Date().toISOString(),
+            updated_at: response.user.updated_at || new Date().toISOString()
+          };
+
           set({
-            user: response.user,
-            token: response.token,
-            refreshToken: response.refreshToken,
+            user,
+            token: response.accessToken, // ✅ FIXED: accessToken instead of token
+            refreshToken: response.refreshToken || null,
             isAuthenticated: true,
             isLoading: false
           });
@@ -136,10 +172,29 @@ export const useAuthStore = create<AuthState>()(
         try {
           const response = await authService.refresh(refreshToken);
           
+          // ✅ FIXED: Map backend field names
+          const user = {
+            id: response.user.id,
+            email: response.user.email,
+            first_name: response.user.first_name,
+            last_name: response.user.last_name,
+            student_id: response.user.student_id,
+            phone: response.user.phone,
+            department: response.user.department,
+            year_of_study: response.user.year_of_study,
+            role: response.user.role,
+            is_verified: response.user.is_verified,
+            profile_image: response.user.profile_image,
+            total_points: response.user.total_points,
+            total_volunteer_hours: response.user.total_volunteer_hours,
+            created_at: response.user.created_at || new Date().toISOString(),
+            updated_at: response.user.updated_at || new Date().toISOString()
+          };
+
           set({
-            user: response.user,
-            token: response.token,
-            refreshToken: response.refreshToken,
+            user,
+            token: response.accessToken, // ✅ FIXED
+            refreshToken: response.refreshToken || null,
             isAuthenticated: true
           });
         } catch (error) {
@@ -160,8 +215,27 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          const user = await authService.getCurrentUser();
+          const userData = await authService.getCurrentUser();
           
+          // ✅ FIXED: Map backend field names
+          const user = {
+            id: userData.id,
+            email: userData.email,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            student_id: userData.student_id,
+            phone: userData.phone,
+            department: userData.department,
+            year_of_study: userData.year_of_study,
+            role: userData.role,
+            is_verified: userData.is_verified,
+            profile_image: userData.profile_image,
+            total_points: userData.total_points,
+            total_volunteer_hours: userData.total_volunteer_hours,
+            created_at: userData.created_at || new Date().toISOString(),
+            updated_at: userData.updated_at || new Date().toISOString()
+          };
+
           set({
             user,
             isAuthenticated: true,
@@ -186,12 +260,22 @@ export const useAuthStore = create<AuthState>()(
         if (!user) return;
 
         try {
-          const updatedUser = await authService.updateProfile(data);
+          const updatedUserData = await authService.updateProfile(data);
           
-          set({
-            user: updatedUser
-          });
+          // ✅ FIXED: Map backend field names
+          const updatedUser = {
+            ...user,
+            first_name: updatedUserData.first_name || user.first_name,
+            last_name: updatedUserData.last_name || user.last_name,
+            student_id: updatedUserData.student_id || user.student_id,
+            phone: updatedUserData.phone || user.phone,
+            department: updatedUserData.department || user.department,
+            year_of_study: updatedUserData.year_of_study || user.year_of_study,
+            profile_image: updatedUserData.profile_image || user.profile_image,
+            updated_at: new Date().toISOString()
+          };
 
+          set({ user: updatedUser });
           toast.success('Profile updated successfully');
         } catch (error: any) {
           const errorMessage = error.response?.data?.message || 'Failed to update profile';
@@ -218,11 +302,7 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated
-      }),
-      // ✅ hydration hook
-      // onRehydrateStorage: () => (state) => {
-      //   state?.set({ hydrated: true });
-      // }
+      })
     }
   )
 );

@@ -109,7 +109,7 @@ export const passwordResetRateLimiter = rateLimit({
 // Rate limiter for registration endpoints
 export const registrationRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // 5 registrations per hour per IP
+  max: 50, // 5 registrations per hour per IP
   message: 'Too many registration attempts. Please try again later.',
   standardHeaders: true,
   legacyHeaders: false,

@@ -23,6 +23,7 @@ interface AuthResponse {
   user: User;
   token: string;
   refreshToken: string;
+  accessToken: string;
 }
 
 interface LoginRequest {

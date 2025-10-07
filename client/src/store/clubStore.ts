@@ -42,15 +42,35 @@ const initialState: Omit<ClubStore, 'fetchClubs' | 'fetchClubById' | 'createClub
 export const useClubStore = create<ClubStore>((set, get) => ({
   ...initialState,
 
+  // fetchClubs: async (filters) => {
+  //   set({ isLoading: true, error: null });
+  //   try {
+  //     const current = { ...(get().filters || {}), ...(filters || {}) } as ClubFilters;
+  //     const res = await clubService.getClubs(current);
+  //     const data = res.data;
+  //     set({ clubs: data?.clubs || [], totalClubs: data?.total || 0, isLoading: false, filters: current });
+  //   } catch (err: any) {
+  //     set({ isLoading: false, error: err?.response?.data?.message || err?.message || 'Failed to fetch clubs' });
+  //   }
+  // },
+
   fetchClubs: async (filters) => {
     set({ isLoading: true, error: null });
     try {
       const current = { ...(get().filters || {}), ...(filters || {}) } as ClubFilters;
-      const res = await clubService.getClubs(current);
-      const data = (res as any).data || res;
-      set({ clubs: data?.clubs || [], totalClubs: data?.total || 0, isLoading: false, filters: current });
+      const data = await clubService.getClubs(current); // ✅ returns ClubListResponse
+
+      set({
+        clubs: data.clubs,
+        totalClubs: data.total,
+        isLoading: false,
+        filters: current,
+      });
     } catch (err: any) {
-      set({ isLoading: false, error: err?.response?.data?.message || err?.message || 'Failed to fetch clubs' });
+      set({
+        isLoading: false,
+        error: err?.response?.data?.message || err?.message || 'Failed to fetch clubs',
+      });
     }
   },
 

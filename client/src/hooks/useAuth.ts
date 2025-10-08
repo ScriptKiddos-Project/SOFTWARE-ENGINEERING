@@ -86,13 +86,14 @@ export const useAuth = (): UseAuthReturn => {
       const payload = {
         email: data.email,
         password: data.password,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        student_id: data.studentId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        studentId: data.studentId,
         phone: data.phone,
         department: data.department,
-        year_of_study: data.yearOfStudy,
+        yearOfStudy: data.yearOfStudy,
       };
+      await storeRegister(payload as any);
       // @ts-ignore: storeRegister expects snake_case keys
       await storeRegister(payload);
     } catch (err: any) {

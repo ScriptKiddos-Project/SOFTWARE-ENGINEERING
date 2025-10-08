@@ -38,16 +38,18 @@ interface AuthState {
   clearAuth: () => void;
 }
 
+// use camelCase in the frontend types
 interface RegisterData {
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
-  student_id?: string;
+  firstName: string;
+  lastName: string;
+  studentId?: string;
   phone?: string;
   department?: string;
-  year_of_study?: number;
+  yearOfStudy?: number;
 }
+
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -99,46 +101,101 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      register: async (userData: RegisterData) => {
-        set({ isLoading: true });
-        try {
-          const response = await authService.register(userData);
+      // register: async (userData: RegisterData) => {
+      //   set({ isLoading: true });
+      //   try {
+      //     const response = await authService.register(userData);
           
-          // ✅ FIXED: Map backend field names to frontend
-          const user = {
-            id: response.user.id,
-            email: response.user.email,
-            first_name: response.user.first_name,
-            last_name: response.user.last_name,
-            student_id: response.user.student_id,
-            phone: response.user.phone,
-            department: response.user.department,
-            year_of_study: response.user.year_of_study,
-            role: response.user.role,
-            is_verified: response.user.is_verified,
-            profile_image: response.user.profile_image,
-            total_points: response.user.total_points,
-            total_volunteer_hours: response.user.total_volunteer_hours,
-            created_at: response.user.created_at || new Date().toISOString(),
-            updated_at: response.user.updated_at || new Date().toISOString()
-          };
+      //     // ✅ FIXED: Map backend field names to frontend
+      //     const user = {
+      //       id: response.user.id,
+      //       email: response.user.email,
+      //       first_name: response.user.first_name,
+      //       last_name: response.user.last_name,
+      //       student_id: response.user.student_id,
+      //       phone: response.user.phone,
+      //       department: response.user.department,
+      //       year_of_study: response.user.year_of_study,
+      //       role: response.user.role,
+      //       is_verified: response.user.is_verified,
+      //       profile_image: response.user.profile_image,
+      //       total_points: response.user.total_points,
+      //       total_volunteer_hours: response.user.total_volunteer_hours,
+      //       created_at: response.user.created_at || new Date().toISOString(),
+      //       updated_at: response.user.updated_at || new Date().toISOString()
+      //     };
 
-          set({
-            user,
-            token: response.accessToken, // ✅ FIXED: accessToken instead of token
-            refreshToken: response.refreshToken || null,
-            isAuthenticated: true,
-            isLoading: false
-          });
+      //     set({
+      //       user,
+      //       token: response.accessToken, // ✅ FIXED: accessToken instead of token
+      //       refreshToken: response.refreshToken || null,
+      //       isAuthenticated: true,
+      //       isLoading: false
+      //     });
 
-          toast.success('Account created successfully!');
-        } catch (error: any) {
-          set({ isLoading: false });
-          const errorMessage = error.response?.data?.message || 'Registration failed';
-          toast.error(errorMessage);
-          throw error;
-        }
-      },
+      //     toast.success('Account created successfully!');
+      //   } catch (error: any) {
+      //     set({ isLoading: false });
+      //     const errorMessage = error.response?.data?.message || 'Registration failed';
+      //     toast.error(errorMessage);
+      //     throw error;
+      //   }
+      // },
+
+      // inside useAuthStore.register
+register: async (userData: RegisterData) => {
+  set({ isLoading: true });
+  try {
+    const rawResponse = await authService.register(userData);
+
+    // Normalize common axios/ApiService / raw server shapes:
+    // rawResponse might be: axiosResponse -> { data: { success, message, data: { user, accessToken } } }
+    // or might be direct server body -> { success, message, data: { user, accessToken } }
+    const axiosData = rawResponse?.data ?? rawResponse;
+    const payload = axiosData?.data ?? axiosData; // now payload should contain { user, accessToken } or just user/accessToken
+
+    const serverUser = payload?.user ?? payload; // sometimes payload is user directly
+
+    // helper to pick camelCase or snake_case
+    const pick = (obj: any, camel: string, snake: string) => obj?.[camel] ?? obj?.[snake];
+
+    const user = {
+      id: pick(serverUser, 'id', 'id'),
+      email: pick(serverUser, 'email', 'email'),
+      first_name: pick(serverUser, 'firstName', 'first_name'),
+      last_name: pick(serverUser, 'lastName', 'last_name'),
+      student_id: pick(serverUser, 'studentId', 'student_id'),
+      phone: pick(serverUser, 'phone', 'phone'),
+      department: pick(serverUser, 'department', 'department'),
+      year_of_study: pick(serverUser, 'yearOfStudy', 'year_of_study'),
+      role: pick(serverUser, 'role', 'role'),
+      is_verified: pick(serverUser, 'isVerified', 'is_verified'),
+      profile_image: pick(serverUser, 'profileImage', 'profile_image'),
+      total_points: pick(serverUser, 'totalPoints', 'total_points') ?? 0,
+      total_volunteer_hours: pick(serverUser, 'totalVolunteerHours', 'total_volunteer_hours') ?? 0,
+      created_at: pick(serverUser, 'createdAt', 'created_at') ?? new Date().toISOString(),
+      updated_at: pick(serverUser, 'updatedAt', 'updated_at') ?? new Date().toISOString()
+    };
+
+    const accessToken = payload?.accessToken ?? payload?.access_token ?? rawResponse?.accessToken ?? rawResponse?.token ?? null;
+
+    set({
+      user,
+      token: accessToken,
+      refreshToken: null,
+      isAuthenticated: true,
+      isLoading: false
+    });
+
+    toast.success('Account created successfully!');
+  } catch (error: any) {
+    set({ isLoading: false });
+    const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+    toast.error(errorMessage);
+    throw error;
+  }
+},
+
 
       logout: async () => {
         const { token } = get();

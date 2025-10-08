@@ -19,11 +19,12 @@ interface User {
   updated_at: string;
 }
 
-interface AuthResponse {
+interface AuthResponse<T = any> {
   user: User;
   token: string;
   refreshToken: string;
   accessToken: string;
+  data?: T,
 }
 
 interface LoginRequest {
@@ -31,16 +32,18 @@ interface LoginRequest {
   password: string;
 }
 
+// client/services/authService.ts
 interface RegisterRequest {
   email: string;
   password: string;
-  first_name: string;
-  last_name: string;
-  student_id?: string;
+  firstName: string;
+  lastName: string;
+  studentId?: string;
   phone?: string;
   department?: string;
-  year_of_study?: number;
+  yearOfStudy?: number;
 }
+
 
 interface ForgotPasswordRequest {
   email: string;

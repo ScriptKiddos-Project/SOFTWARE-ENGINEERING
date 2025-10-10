@@ -12,6 +12,7 @@ import AdminPanel from './pages/AdminPanel';
 import { useAuthStore } from './store/authStore';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from './components/common/LoadingSpinner';
+import VerifyEmail from "./pages/VerifyEmail";
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -94,6 +95,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           >
+            <Route path="/verify-email" element={<VerifyEmail />} /> //added
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="events" element={<Events />} />

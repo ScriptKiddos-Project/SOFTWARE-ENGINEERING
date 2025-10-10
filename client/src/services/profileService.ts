@@ -5,12 +5,12 @@ import { ApiResponse } from '../types/api';
 export const profileService = {
   // Get current user profile - FIXED: Changed from /profile to /profile/me
   getProfile: async (): Promise<ApiResponse<UserProfile>> => {
-    return api.get('/profile/me');
+    return api.get('/me');
   },
 
   // Update user profile - FIXED: Changed from /profile to /profile/me
   updateProfile: async (updateData: Partial<UserProfile>): Promise<ApiResponse<UserProfile>> => {
-    return api.put('/profile/me', updateData);
+    return api.put('/me', updateData);
   },
 
   // Upload profile avatar - FIXED: Changed endpoint
@@ -18,7 +18,7 @@ export const profileService = {
     const formData = new FormData();
     formData.append('profilePicture', file); // Match the multer field name
     
-    return api.post('/profile/me/picture', formData, {
+    return api.post('/me/picture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -27,7 +27,7 @@ export const profileService = {
 
   // Get user's clubs - FIXED: Changed from /profile/clubs to /profile/me/clubs
   getMyClubs: async (): Promise<ApiResponse<any[]>> => {
-    return api.get('/profile/me/clubs');
+    return api.get('/me/clubs');
   },
 
   // Get user's events - FIXED: Changed from /profile/events to /profile/me/events
@@ -40,25 +40,25 @@ export const profileService = {
     if (filters?.limit) params.append('limit', filters.limit.toString());
     
     const queryString = params.toString();
-    const url = queryString ? `/profile/me/events?${queryString}` : '/profile/me/events';
+    const url = queryString ? `/me/events?${queryString}` : '/profile/me/events';
     
     return api.get(url);
   },
 
   // Get points history - FIXED: Changed from /profile/points to /profile/me/points
   getPointsHistory: async (limit?: number): Promise<ApiResponse<PointsHistory[]>> => {
-    const url = limit ? `/profile/me/points?limit=${limit}` : '/profile/me/points';
+    const url = limit ? `/me/points?limit=${limit}` : '/profile/me/points';
     return api.get(url);
   },
 
   // Get volunteer hours - FIXED: Changed endpoint
   getVolunteerHours: async (): Promise<ApiResponse<VolunteerRecord[]>> => {
-    return api.get('/profile/me/volunteer-hours');
+    return api.get('/me/volunteer-hours');
   },
 
   // Get earned badges - FIXED: Changed endpoint
   getBadges: async (): Promise<ApiResponse<Badge[]>> => {
-    return api.get('/profile/me/badges');
+    return api.get('/me/badges');
   },
 
   // Get dashboard statistics - FIXED: Changed endpoint
@@ -72,7 +72,7 @@ export const profileService = {
     rank: number;
     recentActivity: any[];
   }>> => {
-    return api.get('/profile/me/stats');
+    return api.get('/me/stats');
   },
 
   // Update profile settings - FIXED: Changed endpoint
@@ -83,17 +83,17 @@ export const profileService = {
     language?: string;
     timezone?: string;
   }): Promise<ApiResponse<void>> => {
-    return api.put('/profile/me/preferences', settings);
+    return api.put('/me/preferences', settings);
   },
 
   // Get profile settings - FIXED: Changed endpoint
   getSettings: async (): Promise<ApiResponse<any>> => {
-    return api.get('/profile/me/preferences');
+    return api.get('/me/preferences');
   },
 
   // Change password
   changePassword: async (currentPassword: string, newPassword: string): Promise<ApiResponse<void>> => {
-    return api.put('/profile/change-password', {
+    return api.put('/change-password', {
       currentPassword,
       newPassword
     });
@@ -101,12 +101,12 @@ export const profileService = {
 
   // Get activity timeline - FIXED: Changed endpoint
   getActivityTimeline: async (limit: number = 20): Promise<ApiResponse<any[]>> => {
-    return api.get(`/profile/me/activity?limit=${limit}`);
+    return api.get(`/me/activity?limit=${limit}`);
   },
 
   // Get achievements/milestones - FIXED: Changed endpoint
   getAchievements: async (): Promise<ApiResponse<any[]>> => {
-    return api.get('/profile/me/achievements');
+    return api.get('/me/achievements');
   },
 
   // Get leaderboard position - FIXED: Changed endpoint
@@ -115,28 +115,28 @@ export const profileService = {
     totalUsers: number;
     percentile: number;
   }>> => {
-    return api.get('/profile/me/leaderboard');
+    return api.get('/me/leaderboard');
   },
 
   // Export profile data - FIXED: Changed endpoint
   exportProfileData: async (): Promise<ApiResponse<any>> => {
-    return api.get('/profile/me/export');
+    return api.get('/me/export');
   },
 
   // Delete account - FIXED: Changed endpoint and method
   deleteAccount: async (password: string): Promise<ApiResponse<void>> => {
-    return api.delete('/profile/me', {
+    return api.delete('/me', {
       data: { confirmPassword: password }
     });
   },
 
   // Get certificates/credentials
   getCertificates: async (): Promise<ApiResponse<any[]>> => {
-    return api.get('/profile/certificates');
+    return api.get('/certificates');
   },
 
   // Generate participation certificate
   generateCertificate: async (eventId: string): Promise<ApiResponse<{ certificateUrl: string }>> => {
-    return api.post(`/profile/certificates/generate/${eventId}`);
+    return api.post(`/certificates/generate/${eventId}`);
   }
 };

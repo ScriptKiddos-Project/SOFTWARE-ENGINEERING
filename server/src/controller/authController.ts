@@ -269,14 +269,47 @@ export class AuthController {
   });
 
   // Verify email
+  // verifyEmail = catchAsync(async (req: any, res: Response): Promise<void> => {
+  //   const { token } = req.query;
+    
+  //   if (!token || typeof token !== 'string') {
+  //     throw new AppError('Verification token is required', HTTP_STATUS.BAD_REQUEST);
+  //   }
+
+  //   const user = await this.authService.verifyEmail(token);
+
+  //   res.status(HTTP_STATUS.OK).json({
+  //     success: true,
+  //     message: 'Email verified successfully',
+  //     data: {
+  //       user: {
+  //         id: user.id,
+  //         email: user.email,
+  //         isVerified: user.isVerified,
+  //       },
+  //     },
+  //   });
+  // });
+
+  // Verify email
   verifyEmail = catchAsync(async (req: any, res: Response): Promise<void> => {
     const { token } = req.query;
-    
+
     if (!token || typeof token !== 'string') {
       throw new AppError('Verification token is required', HTTP_STATUS.BAD_REQUEST);
     }
 
+    // --- Change starts here ---
+    // Call authService to decode and update user verification status
+    // Ensure that the user is marked as verified in DB
     const user = await this.authService.verifyEmail(token);
+
+    if (!user) {
+      throw new AppError('Invalid or expired verification token', HTTP_STATUS.BAD_REQUEST);
+    }
+
+    // --- Optional: you could redirect to frontend instead of sending JSON ---
+    // res.redirect(`${process.env.FRONTEND_URL}/auth/verify-success`);
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -290,6 +323,7 @@ export class AuthController {
       },
     });
   });
+
 
   // Resend verification email
   resendVerification = catchAsync(async (req: any, res: Response): Promise<void> => {

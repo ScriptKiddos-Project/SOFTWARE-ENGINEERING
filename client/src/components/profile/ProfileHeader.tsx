@@ -19,6 +19,49 @@ interface ProfileHeaderProps {
   className?: string;
 }
 
+// export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+//   user,
+//   onEditProfile,
+//   onChangePhoto,
+//   isOwnProfile = false,
+//   className = ''
+// }) => {
+//   return (
+//     <Card className={`overflow-hidden ${className}`}>
+//       <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+//         {isOwnProfile && (
+//           <Button
+//             variant="secondary"
+//             size="sm"
+//             className="absolute top-4 right-4"
+//             onClick={onEditProfile}
+//           >
+//             <Edit className="h-4 w-4 mr-2" />
+//             Edit Profile
+//           </Button>
+//         )}
+//       </div>
+      
+//       <CardContent className="pt-0 pb-6">
+//         <div className="flex flex-col sm:flex-row items-start gap-6 -mt-16">
+//           <div className="relative">
+//             <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
+//               <AvatarImage src={user.profile_image} alt={`${user.first_name} ${user.last_name}`} />
+//               <AvatarFallback className="text-3xl">
+//                 {user.first_name[0]}{user.last_name[0]}
+//               </AvatarFallback>
+//             </Avatar>
+//             {isOwnProfile && (
+//               <Button
+//                 size="sm"
+//                 className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
+//                 onClick={onChangePhoto}
+//               >
+//                 <Camera className="h-4 w-4" />
+//               </Button>
+//             )}
+//           </div>
+
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   user,
   onEditProfile,
@@ -26,6 +69,20 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   isOwnProfile = false,
   className = ''
 }) => {
+  if (!user) {
+    // Optional: show a skeleton or loading state
+    return (
+      <Card className={`overflow-hidden ${className}`}>
+        <CardContent className="flex items-center justify-center h-32 text-gray-500">
+          Loading profile...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const firstInitial = user.first_name?.[0] ?? '';
+  const lastInitial = user.last_name?.[0] ?? '';
+
   return (
     <Card className={`overflow-hidden ${className}`}>
       <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
@@ -41,16 +98,20 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </Button>
         )}
       </div>
-      
+
       <CardContent className="pt-0 pb-6">
         <div className="flex flex-col sm:flex-row items-start gap-6 -mt-16">
           <div className="relative">
             <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
-              <AvatarImage src={user.profile_image} alt={`${user.first_name} ${user.last_name}`} />
+              <AvatarImage
+                src={user.profile_image ?? ''}
+                alt={`${user.first_name ?? ''} ${user.last_name ?? ''}`}
+              />
               <AvatarFallback className="text-3xl">
-                {user.first_name[0]}{user.last_name[0]}
+                {firstInitial}{lastInitial}
               </AvatarFallback>
             </Avatar>
+
             {isOwnProfile && (
               <Button
                 size="sm"
@@ -61,6 +122,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </Button>
             )}
           </div>
+
+          {/* rest of your code stays unchanged */}
+
           
           <div className="flex-1 pt-4 sm:pt-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">

@@ -27,6 +27,7 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hydrated: boolean;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
@@ -59,6 +60,7 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
+      hydrated: false, // ✅ added here
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
@@ -358,8 +360,13 @@ register: async (userData: RegisterData) => {
         user: state.user,
         token: state.token,
         refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated
-      })
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state, error) => {
+      if (error) console.error('Rehydrate error', error);
+      // else set({ hydrated: true }); // ✅ mark ready
+      else {useAuthStore.setState({ hydrated: true })};
+      },
     }
   )
 );

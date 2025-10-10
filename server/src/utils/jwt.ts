@@ -240,46 +240,65 @@ export const getTokenTTL = (token: string): number | null => {
 /**
  * Generate email verification token
  */
-export const generateEmailVerificationToken = (userId: string, email: string): string => {
-  const payload = {
-    userId,
-    email,
-    type: 'email_verification',
-  };
+// export const generateEmailVerificationToken = (userId: string, email: string): string => {
+//   const payload = {
+//     userId,
+//     email,
+//     type: 'email_verification',
+//   };
   
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: '24h',
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-  });
+//   return jwt.sign(payload, JWT_SECRET, {
+//     expiresIn: '24h',
+//     issuer: JWT_ISSUER,
+//     audience: JWT_AUDIENCE,
+//   });
+// };
+
+// /**
+//  * Verify email verification token
+//  */
+// export const verifyEmailVerificationToken = (token: string): { userId: string; email: string } => {
+//   try {
+//     const decoded = jwt.verify(token, JWT_SECRET, {
+//       issuer: JWT_ISSUER,
+//       audience: JWT_AUDIENCE,
+//     }) as any;
+    
+//     if (decoded.type !== 'email_verification') {
+//       throw new InvalidTokenError('Invalid token type');
+//     }
+    
+//     return {
+//       userId: decoded.userId,
+//       email: decoded.email,
+//     };
+//   } catch (error) {
+//     if (error instanceof jwt.TokenExpiredError) {
+//       throw new TokenExpiredError();
+//     } else if (error instanceof jwt.JsonWebTokenError) {
+//       throw new InvalidTokenError(error.message);
+//     } else {
+//       throw error;
+//     }
+//   }
+// };
+
+// Email verification tokens
+const JWT_EMAIL_SECRET = process.env.JWT_EMAIL_SECRET || JWT_SECRET;
+
+export const generateEmailVerificationToken = (userId: string, email: string): string => {
+  const payload = { userId, email, type: 'email_verification' };
+  return jwt.sign(payload, JWT_EMAIL_SECRET, { expiresIn: '24h', issuer: JWT_ISSUER, audience: JWT_AUDIENCE });
 };
 
-/**
- * Verify email verification token
- */
 export const verifyEmailVerificationToken = (token: string): { userId: string; email: string } => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      issuer: JWT_ISSUER,
-      audience: JWT_AUDIENCE,
-    }) as any;
-    
-    if (decoded.type !== 'email_verification') {
-      throw new InvalidTokenError('Invalid token type');
-    }
-    
-    return {
-      userId: decoded.userId,
-      email: decoded.email,
-    };
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      throw new TokenExpiredError();
-    } else if (error instanceof jwt.JsonWebTokenError) {
-      throw new InvalidTokenError(error.message);
-    } else {
-      throw error;
-    }
+    const decoded = jwt.verify(token, JWT_EMAIL_SECRET, { issuer: JWT_ISSUER, audience: JWT_AUDIENCE }) as any;
+    if (decoded.type !== 'email_verification') throw new InvalidTokenError('Invalid token type');
+    return { userId: decoded.userId, email: decoded.email };
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) throw new TokenExpiredError();
+    throw new InvalidTokenError('Invalid or expired verification token');
   }
 };
 

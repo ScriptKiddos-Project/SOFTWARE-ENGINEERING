@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     {
       name: 'Profile',
-      href: '/profile/me',
+      href: '/me',
       icon: User,
     },
   ];

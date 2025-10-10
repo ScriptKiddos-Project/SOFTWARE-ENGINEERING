@@ -72,6 +72,9 @@ export class authService {
       // Generate email verification token
       const verificationToken = generateEmailVerificationToken(user.id, user.email);
 
+      console.log('Email verification token:', verificationToken);
+      console.log(`Verification URL: ${process.env.CLIENT_URL}/auth/verify-email?token=${verificationToken}`);
+
       // Send verification email
       try {
         await sendEmail({
@@ -118,16 +121,43 @@ export class authService {
   /**
    * Verify email with token
    */
-  async verifyEmail(token: string) {
-    const decoded = verifyEmailVerificationToken(token);
+  // async verifyEmail(token: string) {
+  //   const decoded = verifyEmailVerificationToken(token);
     
-    const user = await prisma.user.update({
-      where: { id: decoded.userId },
-      data: { isVerified: true }
-    });
+  //   const user = await prisma.user.update({
+  //     where: { id: decoded.userId },
+  //     data: { isVerified: true }
+  //   });
 
-    return user;
-  }
+  //   return user;
+  // }
+
+  // In authService.ts
+    verifyEmail = async (token: string) => {
+    try {
+      const decoded = verifyEmailVerificationToken(token);
+
+      const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+      if (!user) return null;
+
+      if (user.isVerified) return user;
+
+      const updatedUser = await prisma.user.update({
+        where: { id: decoded.userId },
+        data: { isVerified: true },
+      });
+
+      return updatedUser;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Email verification failed:', error.message);
+      } else {
+        console.error('Email verification failed:', error);
+      }
+      throw new Error('Invalid or expired verification token');
+    }
+  };
+
 
   /**
    * Generate verification token

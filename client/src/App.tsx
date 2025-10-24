@@ -86,6 +86,8 @@ const App: React.FC = () => {
             }
           />
 
+          <Route path="/auth/verify-email" element={<VerifyEmail />} />
+
           {/* Protected Routes */}
           <Route
             path="/"
@@ -95,7 +97,6 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           >
-            <Route path="/verify-email" element={<VerifyEmail />} /> //added
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="events" element={<Events />} />

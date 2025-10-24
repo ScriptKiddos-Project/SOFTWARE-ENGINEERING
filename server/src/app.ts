@@ -62,7 +62,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/clubs', clubRoutes);
 app.use('/api/events', eventRoutes);
-app.use('/api/profile', profileRoutes);
+app.use('/api', profileRoutes);
 app.use('/api/admin', adminRoutes);
 
 // API documentation route (development only)

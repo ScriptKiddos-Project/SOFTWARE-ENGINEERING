@@ -5,6 +5,7 @@
 
 // services/emailService.ts
 import nodemailer from 'nodemailer';
+import juice from 'juice';
 
 
 export class emailService {
@@ -299,7 +300,8 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       throw new Error(`Email template '${options.template}' not found`);
     }
 
-    const html = templateFn(options.data);
+    // const html = templateFn(options.data);
+    const html = juice(templateFn(options.data));
 
     // Send email
     await transport.sendMail({

@@ -15,6 +15,7 @@ import {
   verifyPasswordResetToken
 } from '../utils/jwt';
 import { logger } from '../utils/logger';
+
 import { 
   HTTP_STATUS, 
   SUCCESS_MESSAGES, 
@@ -118,7 +119,7 @@ export class AuthController {
       await this.emailService.sendVerificationEmail({
         email: user.email,
         firstName: user.firstName,
-        verificationLink
+        verificationLink: `${process.env.CLIENT_URL}/auth/verify-email?token=${verificationLink}`
       });
       logger.info(`Verification email sent to ${user.email}`);
     } catch (error) {

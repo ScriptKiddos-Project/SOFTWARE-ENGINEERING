@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "composite": false,
     "noEmit": true,
     "jsx": "react-jsx",
@@ -19,7 +20,7 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  },
-  "include": ["src/**/*"],
+},
+ "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

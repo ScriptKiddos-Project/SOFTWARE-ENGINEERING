@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import App from './App';
+import { ThemeProvider } from './components/common/ThemeProvider';
 import './styles/globals.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -84,9 +85,11 @@ root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
+        <ThemeProvider>
         <App />
         {/* Optional: React Query Devtools */}
         <ReactQueryDevtools initialIsOpen={false} />
+        </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>
   </React.StrictMode>

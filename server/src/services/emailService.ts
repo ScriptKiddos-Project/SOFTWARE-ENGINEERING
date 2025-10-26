@@ -1,12 +1,5 @@
-// export class EmailService {
-//     async sendVerificationEmail(user: any) { /* TODO: implement */ }
-//     async sendPasswordResetEmail(user: any) { /* TODO: implement */ }
-//   }
-
-// services/emailService.ts
 import nodemailer from 'nodemailer';
 import juice from 'juice';
-
 
 export class emailService {
   async sendVerificationEmail(user: { email: string; firstName: string; verificationLink: string }) {
@@ -69,7 +62,6 @@ export class emailService {
   }
 }
 
-
 interface EmailOptions {
   to: string;
   subject: string;
@@ -111,9 +103,9 @@ const emailTemplates = {
           <h2>Hi ${data.firstName},</h2>
           <p>Thank you for registering with ClubHub. Please verify your email address to activate your account.</p>
           <p>Click the button below to verify your email:</p>
-          <a href="${data.verificationLink}" class="button">Verify Email</a>
+          <a href="${process.env.CLIENT_URL}/auth/verify-email?token=${data.verificationToken}" class="button">Verify Email</a>
           <p>Or copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; color: #4F46E5;">${data.verificationLink}</p>
+          <p style="word-break: break-all; color: #4F46E5;">${data.verificationToken ? `${process.env.CLIENT_URL}/auth/verify-email?token=${data.verificationToken}` : data.verificationLink}</p>
           <p>This link will expire in 24 hours.</p>
           <p>If you didn't create this account, please ignore this email.</p>
         </div>
@@ -148,9 +140,9 @@ const emailTemplates = {
           <h2>Hi ${data.firstName},</h2>
           <p>We received a request to reset your password for your ClubHub account.</p>
           <p>Click the button below to reset your password:</p>
-          <a href="${data.resetLink}" class="button">Reset Password</a>
+          <a href="${data.resetToken ? `${process.env.CLIENT_URL}/reset-password?token=${data.resetToken}` : data.resetLink}" class="button">Reset Password</a>
           <p>Or copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; color: #4F46E5;">${data.resetLink}</p>
+          <p style="word-break: break-all; color: #4F46E5;">${data.resetToken ? `${process.env.CLIENT_URL}/reset-password?token=${data.resetToken}` : data.resetLink}</p>
           <p>This link will expire in 1 hour.</p>
           <div class="warning">
             <strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email and ensure your account is secure.
@@ -292,15 +284,24 @@ const createTransporter = (): nodemailer.Transporter => {
  */
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
+    // ✅ Check if email is configured
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.warn('⚠️ Email not configured. Skipping email send.');
+      console.log('📧 Would have sent email to:', options.to);
+      console.log('📧 Subject:', options.subject);
+      console.log('📧 Template:', options.template);
+      return; // Don't throw error, just skip
+    }
+
     const transport = createTransporter();
 
     // Get template
     const templateFn = emailTemplates[options.template as keyof typeof emailTemplates];
     if (!templateFn) {
+      console.error(`❌ Email template '${options.template}' not found`);
       throw new Error(`Email template '${options.template}' not found`);
     }
 
-    // const html = templateFn(options.data);
     const html = juice(templateFn(options.data));
 
     // Send email
@@ -311,10 +312,11 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
       html
     });
 
-    console.log(`Email sent successfully to ${options.to}`);
+    console.log(`✅ Email sent successfully to ${options.to}`);
   } catch (error) {
-    console.error('Email sending error:', error);
-    throw new Error('Failed to send email');
+    console.error('❌ Email sending error:', error);
+    // ✅ DON'T throw error - let registration continue even if email fails
+    console.log('⚠️ Continuing despite email error...');
   }
 };
 
@@ -337,12 +339,17 @@ export const sendBulkEmails = async (recipients: string[], options: Omit<EmailOp
  */
 export const verifyEmailConfig = async (): Promise<boolean> => {
   try {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.warn('⚠️ Email configuration incomplete');
+      return false;
+    }
+    
     const transport = createTransporter();
     await transport.verify();
-    console.log('Email configuration verified successfully');
+    console.log('✅ Email configuration verified successfully');
     return true;
   } catch (error) {
-    console.error('Email configuration verification failed:', error);
+    console.error('❌ Email configuration verification failed:', error);
     return false;
   }
 };

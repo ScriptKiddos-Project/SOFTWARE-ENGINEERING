@@ -1,4 +1,5 @@
 import { api } from './api';
+import { ApiResponse } from '../types/api';
 import { 
   Event, 
   EventFilters, 
@@ -53,8 +54,17 @@ class EventService {
       const queryString = params.toString();
       const url = queryString ? `${this.endpoints.events}?${queryString}` : this.endpoints.events;
       
-      const response = await api.get<Event[]>(url);
-      return response.data;
+      // Backend returns array directly or wrapped in { data: [...] }
+      const response = await api.get<Event[] | ApiResponse<Event[]>>(url);
+      
+      // Handle both response formats
+      if (Array.isArray(response.data)) {
+        return response.data;
+      } else if (response.data && 'data' in response.data) {
+        return response.data.data;
+      } else {
+        return [];
+      }
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch events');
     }
@@ -65,8 +75,9 @@ class EventService {
    */
   async getEventById(eventId: string): Promise<Event> {
     try {
-      const response = await api.get<Event>(`${this.endpoints.events}/${eventId}`);
-      return response.data;
+      const response = await api.get(`${this.endpoints.events}/${eventId}`);
+      // Backend returns { success: true, data: event }
+      return response.data.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch event details');
     }
@@ -77,8 +88,8 @@ class EventService {
    */
   async createEvent(eventData: CreateEventData): Promise<Event> {
     try {
-      const response = await api.post<Event>(this.endpoints.events, eventData);
-      return response.data;
+      const response = await api.post<ApiResponse<Event>>(this.endpoints.events, eventData);
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to create event');
     }
@@ -89,8 +100,8 @@ class EventService {
    */
   async updateEvent(eventId: string, eventData: UpdateEventData): Promise<Event> {
     try {
-      const response = await api.put<Event>(`${this.endpoints.events}/${eventId}`, eventData);
-      return response.data;
+      const response = await api.put<ApiResponse<Event>>(`${this.endpoints.events}/${eventId}`, eventData);
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to update event');
     }
@@ -112,8 +123,8 @@ class EventService {
    */
   async registerForEvent(eventId: string): Promise<EventRegistration> {
     try {
-      const response = await api.post<EventRegistration>(this.endpoints.register(eventId));
-      return response.data;
+      const response = await api.post<ApiResponse<EventRegistration>>(this.endpoints.register(eventId));
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to register for event');
     }
@@ -135,8 +146,8 @@ class EventService {
    */
   async getEventRegistrations(eventId: string): Promise<EventRegistration[]> {
     try {
-      const response = await api.get<EventRegistration[]>(this.endpoints.registrations(eventId));
-      return response.data;
+      const response = await api.get<ApiResponse<EventRegistration[]>>(this.endpoints.registrations(eventId));
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch event registrations');
     }
@@ -196,8 +207,8 @@ class EventService {
    */
   async getAttendanceReport(eventId: string): Promise<EventAnalytics> {
     try {
-      const response = await api.get<EventAnalytics>(this.endpoints.attendanceReport(eventId));
-      return response.data;
+      const response = await api.get<ApiResponse<EventAnalytics>>(this.endpoints.attendanceReport(eventId));
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch attendance report');
     }
@@ -208,11 +219,11 @@ class EventService {
    */
   async generateQRCode(eventId: string, validMinutes: number = 60): Promise<{ qrCode: string; expiresAt: string }> {
     try {
-      const response = await api.post<{ qrCode: string; expiresAt: string }>(
+      const response = await api.post<ApiResponse<{ qrCode: string; expiresAt: string }>>(
         this.endpoints.qrCode(eventId),
         { validMinutes }
       );
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to generate QR code');
     }
@@ -223,11 +234,11 @@ class EventService {
    */
   async markAttendanceByQR(qrCode: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await api.post<{ success: boolean; message: string }>(
+      const response = await api.post<ApiResponse<{ success: boolean; message: string }>>(
         this.endpoints.qrAttendance,
         { qrCode }
       );
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to mark attendance via QR code');
     }
@@ -238,8 +249,8 @@ class EventService {
    */
   async getAttendanceLogs(eventId: string): Promise<any[]> {
     try {
-      const response = await api.get<any[]>(this.endpoints.attendanceLogs(eventId));
-      return response.data;
+      const response = await api.get<ApiResponse<any[]>>(this.endpoints.attendanceLogs(eventId));
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch attendance logs');
     }
@@ -257,8 +268,8 @@ class EventService {
       const queryString = params.toString();
       const url = queryString ? `${this.endpoints.calendar}?${queryString}` : this.endpoints.calendar;
 
-      const response = await api.get<CalendarEvent[]>(url);
-      return response.data;
+      const response = await api.get<ApiResponse<CalendarEvent[]>>(url);
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch calendar events');
     }
@@ -269,8 +280,8 @@ class EventService {
    */
   async getUserEvents(): Promise<Event[]> {
     try {
-      const response = await api.get<Event[]>('/profile/events');
-      return response.data;
+      const response = await api.get<ApiResponse<Event[]>>('/profile/events');
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch user events');
     }
@@ -284,7 +295,7 @@ class EventService {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await api.post<{ imageUrl: string }>(
+      const response = await api.post<ApiResponse<{ imageUrl: string }>>(
         '/events/upload-image',
         formData,
         {
@@ -294,7 +305,7 @@ class EventService {
         }
       );
 
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to upload event image');
     }
@@ -305,8 +316,8 @@ class EventService {
    */
   async getEventAnalytics(eventId: string): Promise<EventAnalytics> {
     try {
-      const response = await api.get<EventAnalytics>(`${this.endpoints.events}/${eventId}/analytics`);
-      return response.data;
+      const response = await api.get<ApiResponse<EventAnalytics>>(`${this.endpoints.events}/${eventId}/analytics`);
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to fetch event analytics');
     }
@@ -317,10 +328,10 @@ class EventService {
    */
   async sendEventReminders(eventId: string): Promise<{ sent: number; failed: number }> {
     try {
-      const response = await api.post<{ sent: number; failed: number }>(
+      const response = await api.post<ApiResponse<{ sent: number; failed: number }>>(
         `${this.endpoints.events}/${eventId}/send-reminders`
       );
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       throw this.handleError(error, 'Failed to send event reminders');
     }

@@ -13,6 +13,7 @@ import { useAuthStore } from './store/authStore';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import VerifyEmail from "./pages/VerifyEmail";
+import Clubs from './pages/Clubs';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -102,8 +103,9 @@ const App: React.FC = () => {
             <Route path="events" element={<Events />} />
             <Route path="events/:id" element={<EventDetail />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="clubs" element={<ClubDetail />} />
-
+            <Route path="clubs" element={<Clubs />} />
+            <Route path="clubs/:id" element={<ClubDetail />} />
+            
             {/* Admin Routes */}
             <Route
               path="admin"

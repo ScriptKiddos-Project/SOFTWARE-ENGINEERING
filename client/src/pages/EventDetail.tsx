@@ -13,7 +13,8 @@ import { useAuth } from '../hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+// import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
+import { eventService } from '../services/eventService';
 import {
   Calendar,
   Clock,
@@ -86,59 +87,58 @@ const EventDetail: React.FC = () => {
   const fetchEventData = async () => {
     setLoading(true);
     try {
-      // Mock data - replace with actual API calls
-      const mockEvent: Event = {
-        id: id!,
-        title: 'Web Development Workshop 2024',
-        description: `Join us for an intensive hands-on workshop covering the fundamentals of modern web development. 
-
-This workshop is designed for beginners and intermediate developers who want to learn or enhance their skills in building responsive, interactive web applications.
-
-**What you'll learn:**
-- HTML5 and CSS3 fundamentals
-- JavaScript ES6+ features
-- React.js basics
-- Building responsive layouts
-- Git version control
-- Deployment strategies
-
-**What to bring:**
-- Your laptop with a code editor installed
-- Enthusiasm to learn!
-
-Refreshments will be provided. Certificate of participation will be awarded to all attendees.`,
-        clubId: 'c1',
-        clubName: 'Coding Club',
-        eventType: 'workshop',
-        startDate: '2024-02-15T14:00:00Z',
-        endDate: '2024-02-15T18:00:00Z',
-        location: 'Computer Lab 301, Main Building',
-        maxParticipants: 50,
-        registrationDeadline: '2024-02-14T23:59:59Z',
-        pointsReward: 50,
-        volunteerHours: 4,
-        imageUrl: '',
-        tags: ['Web Development', 'JavaScript', 'React', 'Beginner Friendly'],
-        skillAreas: ['Programming', 'Web Development', 'Frontend'],
-        isPublished: true,
-        requiresApproval: false,
-        createdBy: 'u1',
-        organizerName: 'John Doe',
-        registrationCount: 42,
+      const eventData = await eventService.getEventById(id!);
+      
+      console.log('Event data from API:', eventData); // Check the actual structure
+      
+      // Map the API response to match your local Event interface
+      const mappedEvent: Event = {
+        id: eventData.id,
+        title: eventData.title,
+        description: eventData.description || '',
+        clubId: eventData.clubId,
+        clubName: (eventData as any).club?.name || 'Unknown Club',
+        clubLogo: (eventData as any).club?.logoUrl,
+        eventType: eventData.eventType,
+        startDate: eventData.startDate,
+        endDate: eventData.endDate,
+        location: eventData.location || '',
+        maxParticipants: eventData.maxParticipants,
+        registrationDeadline: eventData.registrationDeadline,
+        pointsReward: eventData.pointsReward || 0,
+        volunteerHours: eventData.volunteerHours || 0,
+        imageUrl: eventData.imageUrl,
+        tags: eventData.tags || [],
+        skillAreas: eventData.skillAreas || [],
+        isPublished: eventData.isPublished,
+        requiresApproval: eventData.requiresApproval || false,
+        createdBy: eventData.createdBy,
+        organizerName: 'Event Organizer',
+        registrationCount: (eventData as any)._count?.eventRegistrations || 0,
         attendanceCount: 0,
-        status: 'upcoming'
+        status: getEventStatus(eventData)
       };
-
-      setEvent(mockEvent);
-      setIsRegistered(false);
-      setIsWaitlisted(false);
+      
+      setEvent(mappedEvent);
+      
     } catch (error) {
       console.error('Failed to fetch event data:', error);
+      setEvent(null);
     } finally {
       setLoading(false);
     }
   };
-
+// Helper function to determine event status
+const getEventStatus = (event: any): 'upcoming' | 'ongoing' | 'completed' | 'cancelled' => {
+  const now = new Date();
+  const start = new Date(event.startDate);
+  const end = new Date(event.endDate);
+  
+  if (!event.isPublished) return 'cancelled';
+  if (now < start) return 'upcoming';
+  if (now >= start && now <= end) return 'ongoing';
+  return 'completed';
+};
   const handleRegister = async () => {
     try {
       // await eventService.registerForEvent(id!);

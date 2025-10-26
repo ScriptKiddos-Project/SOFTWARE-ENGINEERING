@@ -147,7 +147,7 @@ const Profile = () => {
                   <div>
                     <p className="text-sm text-gray-600">Clubs Joined</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {joinedClubs?.length || 0}
+                      {Array.isArray(joinedClubs) ? joinedClubs.length : 0}
                     </p>
                   </div>
                 </div>
@@ -161,7 +161,7 @@ const Profile = () => {
                   <div>
                     <p className="text-sm text-gray-600">Events Attended</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {pointsHistory?.length || 0}
+                      {Array.isArray(pointsHistory) ? pointsHistory.length : 0}
                     </p>
                   </div>
                 </div>
@@ -200,9 +200,9 @@ const Profile = () => {
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
                 <JoinedClubs 
-                  userClubs={(joinedClubs || []).slice(0, 3)}
+                  userClubs={Array.isArray(joinedClubs) ? joinedClubs.slice(0, 3) : []}
                 />
-                {(joinedClubs?.length || 0) > 3 && (
+                {Array.isArray(joinedClubs) && joinedClubs.length > 3 && (
                   <Button
                     variant="ghost"
                     className="w-full mt-4"
@@ -215,7 +215,7 @@ const Profile = () => {
 
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Latest Badges</h3>
-                <BadgeDisplay badges={userBadges.slice(0, 4)} />
+                <BadgeDisplay badges={Array.isArray(userBadges) ? userBadges.slice(0, 4) : []} />
                 {userBadges.length > 4 && (
                   <Button
                     variant="ghost"
@@ -232,7 +232,7 @@ const Profile = () => {
           <TabsContent value="clubs">
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-6">Joined Clubs</h2>
-              <JoinedClubs userClubs={joinedClubs || []} />
+              <JoinedClubs userClubs={Array.isArray(joinedClubs) ? joinedClubs : []} />
             </Card>
           </TabsContent>
 
@@ -240,7 +240,7 @@ const Profile = () => {
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-6">AICTE Points History</h2>
               <PointsHistory 
-                pointsHistory={pointsHistory || []} 
+                pointsHistory={Array.isArray(pointsHistory) ? pointsHistory : []}
                 totalPoints={profile.total_points || 0}
               />
             </Card>
@@ -259,7 +259,7 @@ const Profile = () => {
           <TabsContent value="badges">
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-6">Earned Badges</h2>
-              <BadgeDisplay badges={userBadges} />
+              <BadgeDisplay badges={Array.isArray(userBadges) ? userBadges : []} />
             </Card>
           </TabsContent>
 

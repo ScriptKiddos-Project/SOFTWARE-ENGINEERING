@@ -3,14 +3,112 @@ import { Club } from '../types/club';
 
 
 // Base API response structure
+// export interface ApiResponse<T = any> {
+//   data?: T;
+//   message?: string;
+//   error?: string;
+//   errors?: ValidationError[];
+//   meta?: ResponseMeta;
+//   clubs: Club[],
+//   total: number;
+// }
+
+// export interface ResponseMeta {
+//   pagination?: PaginationMeta;
+//   filters?: Record<string, any>;
+//   sort?: SortMeta;
+//   timestamp: string;
+//   requestId?: string;
+//   version?: string;
+// }
+
+// export interface PaginationMeta {
+//   page: number;
+//   limit: number;
+//   total: number;
+//   totalPages: number;
+//   hasNext: boolean;
+//   hasPrev: boolean;
+// }
+
+// export interface SortMeta {
+//   field: string;
+//   order: 'asc' | 'desc';
+// }
+
+// // Error handling
+// export interface ValidationError {
+//   field: string;
+//   message: string;
+//   code: string;
+//   value?: any;
+// }
+
+// export interface ApiError {
+//   code: string;
+//   message: string;
+//   details?: Record<string, any>;
+//   timestamp: string;
+//   path?: string;
+//   method?: string;
+//   statusCode: number;
+// }
+
+// export type ApiErrorCode = 
+//   | 'VALIDATION_ERROR'
+//   | 'AUTHENTICATION_ERROR'
+//   | 'AUTHORIZATION_ERROR'
+//   | 'NOT_FOUND'
+//   | 'CONFLICT'
+//   | 'RATE_LIMIT_EXCEEDED'
+//   | 'INTERNAL_ERROR'
+//   | 'SERVICE_UNAVAILABLE'
+//   | 'BAD_REQUEST'
+//   | 'FORBIDDEN';
+
+// // HTTP methods
+// export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
+// // Request configuration
+// export interface RequestConfig {
+//   method: HttpMethod;
+//   url: string;
+//   data?: any;
+//   params?: Record<string, any>;
+//   headers?: Record<string, string>;
+//   timeout?: number;
+//   retries?: number;
+//   cache?: boolean;
+//   signal?: AbortSignal;
+// }
+
+// // Base query parameters
+// export interface BaseQueryParams {
+//   page?: number;
+//   limit?: number;
+//   sortBy?: string;
+//   sortOrder?: 'asc' | 'desc';
+//   search?: string;
+// }
+
+// API-related types and interfaces
+
+// Base API response structure - FIXED VERSION
 export interface ApiResponse<T = any> {
-  data?: T;
+  data: T;
   message?: string;
   error?: string;
   errors?: ValidationError[];
   meta?: ResponseMeta;
-  clubs: Club[],
+}
+
+// Paginated response (used by clubs endpoint)
+export interface PaginatedApiResponse<T = any> {
+  data: T[];
   total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface ResponseMeta {
@@ -90,6 +188,8 @@ export interface BaseQueryParams {
   sortOrder?: 'asc' | 'desc';
   search?: string;
 }
+
+// ... rest of your existing types remain the same ...
 
 // File upload types
 export interface FileUploadConfig {

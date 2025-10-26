@@ -88,7 +88,7 @@ router.get('/me/clubs', profileController.getMyClubs);
 router.get('/me/events', profileController.getMyEvents);
 
 // Points and achievements
-router.get('/me/points', profileController.getPointsHistory);
+router.get('/profile/me/points', profileController.getPointsHistory);
 router.get('/me/volunteer-hours', profileController.getVolunteerHours);
 router.get('/me/badges', profileController.getBadges);
 router.get('/me/achievements', profileController.getAchievements);

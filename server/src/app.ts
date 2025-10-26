@@ -76,7 +76,7 @@ if (process.env.NODE_ENV === 'development') {
         users: '/api/users',
         clubs: '/api/clubs',
         events: '/api/events',
-        profile: '/api/profile',
+        profile: '/api',
         admin: '/api/admin'
       },
       swagger: 'Coming soon...'

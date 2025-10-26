@@ -78,8 +78,8 @@ const Dashboard = () => {
             Ready to explore what's happening on campus today?
           </p>
         </div>
-
-        {/* 🧪 THEME TEST SECTION - TEMPORARY */}
+{/* 
+        🧪 THEME TEST SECTION - TEMPORARY
         <div className="p-4 bg-background text-foreground border-2 border-border rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold mb-2">🧪 Theme Testing (Remove after testing)</h3>
           <p className="text-muted-foreground mb-3">
@@ -95,10 +95,10 @@ const Dashboard = () => {
             <p className="text-sm font-mono">
               Current HTML class: <strong className="text-primary">{htmlClass || '(none)'}</strong>
             </p>
-          </div>
+          </div>*/}
           
           {/* Color test swatches */}
-          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+          {/* <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
             <div className="p-2 bg-background border border-border rounded">bg-background</div>
             <div className="p-2 bg-card border border-border rounded">bg-card</div>
             <div className="p-2 bg-primary text-primary-foreground rounded">bg-primary</div>
@@ -106,7 +106,7 @@ const Dashboard = () => {
             <div className="p-2 bg-muted text-muted-foreground rounded">bg-muted</div>
             <div className="p-2 bg-accent text-accent-foreground rounded">bg-accent</div>
           </div>
-        </div>
+        </div> */}
         {/* END THEME TEST SECTION */}
 
         {/* Stats Overview */}

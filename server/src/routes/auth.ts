@@ -99,7 +99,7 @@ router.get('/check', optionalAuth, authController.checkAuth);
 router.post('/logout', authMiddleware, authController.logout);
 
 /**
- * @route   GET /api/profile/me
+ * @route   GET /api/me
  * @desc    Get current user profile
  * @access  Protected
  */

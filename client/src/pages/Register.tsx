@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -10,10 +11,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { authService } from '@/services/authService';
 
 import { Loader2, Mail, Lock, Eye, EyeOff, User, Phone, GraduationCap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -55,6 +56,10 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false); // I added these
+
+  const [showResendOption, setShowResendOption] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -71,24 +76,82 @@ const Register = () => {
     },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
-    try {
-      setError(null);
-      await registerUser({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        password: data.password,
-        studentId: data.studentId,
-        phone: data.phone,
-        department: data.department,
-        yearOfStudy: data.yearOfStudy,
-      });
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
-    }
-  };
+  // const onSubmit = async (data: RegisterFormData) => {
+  //   try {
+  //     setError(null);
+  //     await registerUser({
+  //       firstName: data.firstName,
+  //       lastName: data.lastName,
+  //       email: data.email,
+  //       password: data.password,
+  //       studentId: data.studentId,
+  //       phone: data.phone,
+  //       department: data.department,
+  //       yearOfStudy: data.yearOfStudy,
+  //     });
+  //     navigate('/dashboard');
+  //   } catch (err: any) {
+  //     setError(err.message || 'Registration failed. Please try again.');
+  //   }
+
+    // Update the onSubmit function in Register.tsx
+
+    const handleResendVerification = async () => {
+      try {
+        setResendingEmail(true);
+        // Call the resend verification endpoint
+        await authService.sendVerificationEmail();
+        toast.success('Verification email sent! Please check your inbox.');
+        setShowResendOption(false);
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Failed to resend verification email');
+      } finally {
+        setResendingEmail(false);
+      }
+    };
+
+    const onSubmit = async (data: RegisterFormData) => {
+      try {
+        setError(null);
+        setShowResendOption(false); // Reset resend option
+        
+        await registerUser({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          password: data.password,
+          studentId: data.studentId,
+          phone: data.phone,
+          department: data.department,
+          yearOfStudy: data.yearOfStudy,
+        });
+        
+        setShowVerificationMessage(true);
+        toast.success('Registration successful! Please check your email to verify your account.');
+        
+        setTimeout(() => {
+          navigate('/login');
+        }, 5000);
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
+        setError(errorMessage);
+        
+        // ✅ Check if it's an unverified email error
+        if (errorMessage.includes('already registered but not verified')) {
+          setShowResendOption(true);
+          toast.error(errorMessage, { duration: 8000 });
+        } else if (errorMessage.includes('already exists') || errorMessage.includes('already registered')) {
+          toast.error('This email is already registered. Please try logging in instead.', { 
+            duration: 5000,
+          });
+          // Redirect to login after 2 seconds
+          setTimeout(() => navigate('/login'), 2000);
+        } else {
+          toast.error(errorMessage);
+        }
+      }
+    };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-4">
@@ -107,6 +170,57 @@ const Register = () => {
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
+              )}
+               {/* I added these */}
+              {showVerificationMessage && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex gap-3">
+                    <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div className="flex-1">
+                      <strong className="block mb-1 text-blue-900">📧 Verify Your Email</strong>
+                      <p className="text-blue-800 text-sm">
+                        We've sent a verification link to <strong>{form.getValues('email')}</strong>. 
+                        Please check your inbox and click the link to activate your account.
+                      </p>
+                      <p className="text-sm text-blue-600 mt-2 font-medium">
+                        Redirecting to login in 5 seconds...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {error && (
+                <>
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                  
+                  {/* ✅ Show resend button if email not verified */}
+                  {showResendOption && (
+                    <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800 flex-1">
+                        Haven't received the verification email?
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResendVerification}
+                        disabled={resendingEmail}
+                      >
+                        {resendingEmail ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          'Resend Email'
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,10 +1,9 @@
 import { Response } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-// import { authService } from '../services/authService';
 import { authService } from '../services/authService';
 import { UserService } from '../services/userService';
-import { emailService } from '../services/emailService';
+import { sendEmail } from '../services/emailService'; // ✅ Import function directly
 import { 
   generateAccessToken, 
   generateRefreshToken, 
@@ -74,12 +73,12 @@ const changePasswordSchema = z.object({
 export class AuthController {
   private authService: authService;
   private userService: UserService;
-  private emailService: emailService;
+  // ✅ REMOVED: private emailService: emailService;
 
   constructor() {
     this.authService = new authService();
     this.userService = new UserService();
-    this.emailService = new emailService();
+    // ✅ REMOVED: this.emailService = new emailService();
   }
 
   // Register new user
@@ -99,6 +98,13 @@ export class AuthController {
     // Check if user already exists
     const existingUser = await this.userService.findByEmail(userData.email);
     if (existingUser) {
+      // ✅ Add better error message based on verification status
+      if (!existingUser.isVerified) {
+        throw new AppError(
+          'This email is already registered but not verified. Please check your email for the verification link or request a new one.',
+          HTTP_STATUS.CONFLICT
+        );
+      }
       throw new AppError(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS, HTTP_STATUS.CONFLICT);
     }
 
@@ -115,41 +121,30 @@ export class AuthController {
 
     // Send verification email
     try {
-      const verificationLink = await this.authService.generateVerificationToken(user);
-      await this.emailService.sendVerificationEmail({
-        email: user.email,
-        firstName: user.firstName,
-        verificationLink: `${process.env.CLIENT_URL}/auth/verify-email?token=${verificationLink}`
+      const verificationToken = await this.authService.generateVerificationToken(user);
+      await sendEmail({
+        to: user.email,
+        subject: 'Verify Your ClubHub Email Address',
+        template: 'email-verification',
+        data: {
+          firstName: user.firstName,
+          verificationToken, // ✅ Pass token for template to build link
+          email: user.email,
+        }
       });
       logger.info(`Verification email sent to ${user.email}`);
     } catch (error) {
       logger.error('Failed to send verification email:', error);
+      // ✅ Don't let email failure block registration
     }
 
-    // Generate tokens
-    const tokens = await this.authService.generateTokens(user);
-
-    // Set refresh token in HTTP-only cookie
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    // ✅ Return success without tokens - user must verify email first
     res.status(HTTP_STATUS.CREATED).json({
       success: true,
-      message: SUCCESS_MESSAGES.REGISTRATION_SUCCESS,
+      message: 'Registration successful! Please check your email to verify your account.',
       data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          isVerified: user.isVerified,
-        },
-        accessToken: tokens.accessToken,
+        email: user.email,
+        requiresVerification: true,
       },
     });
   });
@@ -180,10 +175,20 @@ export class AuthController {
       throw new AppError(ERROR_MESSAGES.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
+    // ✅ Check verification BEFORE generating tokens
+    if (!user.isVerified) {
+      res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        message: 'Please verify your email before logging in. Check your inbox for the verification link.',
+        error: 'EMAIL_NOT_VERIFIED'
+      });
+      return;
+    }
+
     // Update last login
     await this.userService.updateUser(user.id, { updatedAt: new Date() });
 
-    // Generate tokens
+    // ✅ Generate tokens only if verified
     const tokens = await this.authService.generateTokens(user, rememberMe);
 
     // Set refresh token in HTTP-only cookie
@@ -202,13 +207,19 @@ export class AuthController {
         user: {
           id: user.id,
           email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          student_id: user.studentId,
+          phone: user.phone,
+          department: user.department,
+          year_of_study: user.yearOfStudy,
           role: user.role,
-          isVerified: user.isVerified,
-          profileImage: user.profileImage,
-          totalPoints: user.totalPoints,
-          totalVolunteerHours: user.totalVolunteerHours,
+          is_verified: user.isVerified,
+          profile_image: user.profileImage,
+          total_points: user.totalPoints,
+          total_volunteer_hours: user.totalVolunteerHours,
+          created_at: user.createdAt,
+          updated_at: user.updatedAt,
         },
         accessToken: tokens.accessToken,
       },
@@ -270,29 +281,6 @@ export class AuthController {
   });
 
   // Verify email
-  // verifyEmail = catchAsync(async (req: any, res: Response): Promise<void> => {
-  //   const { token } = req.query;
-    
-  //   if (!token || typeof token !== 'string') {
-  //     throw new AppError('Verification token is required', HTTP_STATUS.BAD_REQUEST);
-  //   }
-
-  //   const user = await this.authService.verifyEmail(token);
-
-  //   res.status(HTTP_STATUS.OK).json({
-  //     success: true,
-  //     message: 'Email verified successfully',
-  //     data: {
-  //       user: {
-  //         id: user.id,
-  //         email: user.email,
-  //         isVerified: user.isVerified,
-  //       },
-  //     },
-  //   });
-  // });
-
-  // Verify email
   verifyEmail = catchAsync(async (req: any, res: Response): Promise<void> => {
     const { token } = req.query;
 
@@ -300,17 +288,11 @@ export class AuthController {
       throw new AppError('Verification token is required', HTTP_STATUS.BAD_REQUEST);
     }
 
-    // --- Change starts here ---
-    // Call authService to decode and update user verification status
-    // Ensure that the user is marked as verified in DB
     const user = await this.authService.verifyEmail(token);
 
     if (!user) {
       throw new AppError('Invalid or expired verification token', HTTP_STATUS.BAD_REQUEST);
     }
-
-    // --- Optional: you could redirect to frontend instead of sending JSON ---
-    // res.redirect(`${process.env.FRONTEND_URL}/auth/verify-success`);
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -325,7 +307,6 @@ export class AuthController {
     });
   });
 
-
   // Resend verification email
   resendVerification = catchAsync(async (req: any, res: Response): Promise<void> => {
     if (!req.user) {
@@ -336,8 +317,18 @@ export class AuthController {
       throw new AppError('Email is already verified', HTTP_STATUS.BAD_REQUEST);
     }
 
-    await this.authService.generateVerificationToken(req.user);
-    await this.emailService.sendVerificationEmail(req.user);
+    const verificationToken = await this.authService.generateVerificationToken(req.user);
+    
+    await sendEmail({
+      to: req.user.email,
+      subject: 'Verify Your ClubHub Email Address',
+      template: 'email-verification',
+      data: {
+        firstName: req.user.firstName,
+        verificationToken,
+        email: req.user.email
+      }
+    });
 
     res.status(HTTP_STATUS.OK).json({
       success: true,
@@ -368,10 +359,19 @@ export class AuthController {
       return;
     }
 
-    await this.authService.generatePasswordResetToken(user);
+    const resetToken = await this.authService.generatePasswordResetToken(user);
 
     try {
-      // await this.emailService.sendPasswordResetEmail(user);
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset Your ClubHub Password',
+        template: 'password-reset',
+        data: {
+          firstName: user.firstName,
+          resetToken,
+          email: user.email,
+        }
+      });
       logger.info(`Password reset email sent to ${user.email}`);
     } catch (error) {
       logger.error('Failed to send password reset email:', error);

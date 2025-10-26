@@ -115,14 +115,24 @@ export const authMiddleware = async (
       return;
     }
 
-    if (user.isVerified === false && req.path !== '/auth/verify-email' && req.path !== '/auth/resend-verification') {
+    // Check if user is verified
+    if (!user.isVerified) {
       res.status(403).json({
         success: false,
-        message: 'Email verification required',
+        message: 'Please verify your email address to access this resource',
         error: AuthErrorCodes.ACCOUNT_NOT_VERIFIED
       } as ApiResponse);
       return;
     }
+
+    // if (user.isVerified === false && req.path !== '/auth/verify-email' && req.path !== '/auth/resend-verification') {
+    //   res.status(403).json({
+    //     success: false,
+    //     message: 'Email verification required',
+    //     error: AuthErrorCodes.ACCOUNT_NOT_VERIFIED
+    //   } as ApiResponse);
+    //   return;
+    // }
 
     req.user = user as any;
     req.userId = user.id;

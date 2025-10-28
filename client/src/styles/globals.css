@@ -231,6 +231,18 @@ body {
     @apply hover:bg-accent;
   }
 
+  /* Fix for Join Club button hover */
+  .btn-primary:hover,
+  button[class*="bg-blue"]:hover {
+    opacity: 0.9;
+    color: white !important;
+  }
+
+  /* Ensure text remains visible on hover for all buttons */
+  button:hover {
+    color: inherit;
+  }
+
   /* Input styles */
   .input {
     @apply flex h-10 w-full rounded-md px-3 py-2;
@@ -285,6 +297,85 @@ body {
   .badge-danger {
     background-color: hsl(var(--danger) / 0.1);
     color: hsl(var(--danger));
+  }
+
+  /* Add these fixes to your CSS file or create a separate EventDetail.css */
+
+  /* Fix the badge colors - they're showing white text on light backgrounds */
+  .badge-status-upcoming {
+    background-color: hsl(217, 91%, 60%) !important;
+    color: white !important;
+  }
+
+  .badge-status-completed {
+    background-color: hsl(220, 13%, 46%) !important;
+    color: white !important;
+  }
+
+  .badge-status-ongoing {
+    background-color: hsl(142, 71%, 45%) !important;
+    color: white !important;
+  }
+
+  .badge-status-cancelled {
+    background-color: hsl(0, 84%, 60%) !important;
+    color: white !important;
+  }
+
+  /* Fix the skill badges - they're showing dark text on dark background */
+  .badge-skill {
+    background-color: hsl(217, 91%, 60%) !important;
+    color: white !important;
+  }
+
+  /* Ensure proper contrast for all badge variants */
+  .badge-outline {
+    background-color: transparent !important;
+    border: 1px solid hsl(var(--border)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Fix the hero section text visibility */
+
+  /* Fix z-index layering for event detail page */
+  .hero-section {
+    position: relative;
+    z-index: 10;
+  }
+
+  .content-section {
+    position: relative;
+    z-index: 30;
+    background-color: hsl(var(--background));
+  }
+
+  /* Ensure cards are above the hero section */
+  .event-detail-card,
+  .card {
+    position: relative;
+    z-index: 40;
+    background-color: white;
+  }
+  
+  .hero-text {
+    color: white !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Ensure cards have proper elevation */
+  .event-detail-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    background-color: white;
+  }
+
+  /* Fix any potential z-index issues with the overlay */
+  .hero-overlay {
+    z-index: 10;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 20;
   }
 
   /* Loading spinner */

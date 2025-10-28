@@ -165,12 +165,12 @@ const getEventStatus = (event: any): 'upcoming' | 'ongoing' | 'completed' | 'can
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      upcoming: 'bg-blue-600 text-blue-800',
-      ongoing: 'bg-green-100 text-green-800',
-      completed: 'bg-gray-100 text-gray-800',
-      cancelled: 'bg-red-100 text-red-800'
+      upcoming: 'bg-blue-500 text-white',      // Changed from bg-blue-600 text-blue-800
+      ongoing: 'bg-green-500 text-white',      // Changed from bg-green-100 text-green-800
+      completed: 'bg-gray-500 text-white',     // Changed from bg-gray-100 text-gray-800
+      cancelled: 'bg-red-500 text-white'       // Changed from bg-red-100 text-red-800
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return colors[status] || 'bg-gray-500 text-white';
   };
 
   const getEventTypeIcon = (type: string) => {
@@ -224,31 +224,40 @@ const getEventStatus = (event: any): 'upcoming' | 'ongoing' | 'completed' | 'can
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative h-96 bg-gradient-to-r from-blue-600 to-purple-600">
+      <div className="relative h-96 overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 mb-20">
+        {/* Background Image */}
         {event.imageUrl && (
-          <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+          <img
+            src={event.imageUrl}
+            alt={event.title}
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
         )}
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="absolute inset-0 flex items-center">
+
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/60 z-10" />
+
+        {/* Text Layer */}
+        <div className="relative z-20 flex items-center h-full">
           <div className="container mx-auto px-4">
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/20 mb-4"
+            <button
+              className="flex items-center text-white hover:bg-white/20 mb-4 px-4 py-2 rounded-md transition-colors"
               onClick={() => navigate('/events')}
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
               Back to Events
-            </Button>
+            </button>
+
             <div className="max-w-3xl">
               <div className="flex items-center gap-2 mb-4">
-                <Badge className={getStatusColor(event.status)}>
-                  {event.status}
-                </Badge>
-                <Badge variant="outline" className="text-white border-white">
+                <Badge className={getStatusColor(event.status)}>{event.status}</Badge>
+                <Badge variant="outline" className="text-white border-white bg-transparent">
                   {event.eventType}
                 </Badge>
               </div>
+
               <h1 className="text-4xl font-bold text-white mb-4">{event.title}</h1>
+
               <div className="flex items-center gap-4 text-white/90">
                 <div className="flex items-center gap-2">
                   <Building2 className="w-5 h-5" />

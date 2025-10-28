@@ -603,4 +603,61 @@ export class AdminController {
       next(error);
     }
   }
+  async exportData(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      this.checkAdminAccess(req.user);
+
+      const { type } = req.params; // 'users', 'clubs', 'events', or 'all'
+      const filters = req.query;
+
+      let csvData: string;
+      let filename: string;
+
+      switch (type) {
+        case 'users':
+          csvData = await adminService.exportUsers(filters);
+          filename = `users_export_${Date.now()}.csv`;
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+          res.send(csvData);
+          return; // Add return here
+          
+        case 'clubs':
+          csvData = await adminService.exportClubs(filters);
+          filename = `clubs_export_${Date.now()}.csv`;
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+          res.send(csvData);
+          return; // Add return here
+          
+        case 'events':
+          csvData = await adminService.exportEvents(filters);
+          filename = `events_export_${Date.now()}.csv`;
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+          res.send(csvData);
+          return; // Add return here
+          
+        case 'all':
+          const [users, clubs, events] = await Promise.all([
+            adminService.exportUsers(filters),
+            adminService.exportClubs(filters),
+            adminService.exportEvents(filters)
+          ]);
+          
+          // Combine all CSVs with headers
+          const allData = `=== USERS ===\n${users}\n\n=== CLUBS ===\n${clubs}\n\n=== EVENTS ===\n${events}`;
+          
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', `attachment; filename=all_data_export_${Date.now()}.csv`);
+          res.send(allData);
+          return; // Add return here
+          
+        default:
+          throw new AppError('Invalid export type', HTTP_STATUS.BAD_REQUEST);
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
 }

@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Plus, Search, Calendar, Users, BookOpen, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickAction {
   id: string;
@@ -33,6 +34,9 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   onViewProfile,
   onSettings
 }) => {
+
+  const navigate = useNavigate();
+
   const getQuickActions = (): QuickAction[] => {
     const commonActions: QuickAction[] = [
       {
@@ -40,7 +44,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         title: 'Browse Events',
         description: 'Discover upcoming events',
         icon: <Calendar className="h-5 w-5" />,
-        onClick: onViewEvents || (() => {}),
+        onClick: onViewEvents || (() => navigate('/events')),
         variant: 'default'
       },
       {
@@ -48,7 +52,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         title: 'View Profile',
         description: 'Check your stats & badges',
         icon: <BookOpen className="h-5 w-5" />,
-        onClick: onViewProfile || (() => {}),
+        onClick: onViewProfile || (() => navigate('/profile')),
         variant: 'outline'
       },
       {
@@ -56,7 +60,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
         title: 'Settings',
         description: 'Manage preferences',
         icon: <Settings className="h-5 w-5" />,
-        onClick: onSettings || (() => {}),
+        onClick: onSettings || (() => navigate('/profile')),
         variant: 'outline'
       }
     ];

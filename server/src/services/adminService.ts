@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ApiError } from '../utils/errors';
+import { Parser } from 'json2csv';
 
 const prisma = new PrismaClient();
 
@@ -958,51 +959,252 @@ async adjustUserPoints(userId: string, points: number, volunteerHours: number, r
   }
 }
 
-async runMaintenance(tasks: string[], executedBy: string) {
-  try {
-    const results = [];
-    for (const task of tasks) {
-      // Implement maintenance tasks
-      results.push({ task, status: 'completed' });
+  async runMaintenance(tasks: string[], executedBy: string) {
+    try {
+      const results = [];
+      for (const task of tasks) {
+        // Implement maintenance tasks
+        results.push({ task, status: 'completed' });
+      }
+      return { tasks: results, executedAt: new Date(), executedBy };
+    } catch (error) {
+      throw new ApiError(500, 'Failed to run maintenance');
     }
-    return { tasks: results, executedAt: new Date(), executedBy };
-  } catch (error) {
-    throw new ApiError(500, 'Failed to run maintenance');
   }
-}
 
-async getAuditLogs(filters: any, page: number, limit: number) {
-  try {
-    const skip = (page - 1) * limit;
-    const where: any = {};
+  async getAuditLogs(filters: any, page: number, limit: number) {
+    try {
+      const skip = (page - 1) * limit;
+      const where: any = {};
 
-    if (filters.action) where.action = filters.action;
-    if (filters.userId) where.userId = filters.userId;
-    if (filters.startDate || filters.endDate) {
-      where.createdAt = {};
-      if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
-      if (filters.endDate) where.createdAt.lte = new Date(filters.endDate);
+      if (filters.action) where.action = filters.action;
+      if (filters.userId) where.userId = filters.userId;
+      if (filters.startDate || filters.endDate) {
+        where.createdAt = {};
+        if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
+        if (filters.endDate) where.createdAt.lte = new Date(filters.endDate);
+      }
+
+      const [logs, total] = await Promise.all([
+        prisma.auditLog.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' }
+        }),
+        prisma.auditLog.count({ where })
+      ]);
+
+      return {
+        logs,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      };
+    } catch (error) {
+      throw new ApiError(500, 'Failed to fetch audit logs');
+    }
     }
 
-    const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' }
-      }),
-      prisma.auditLog.count({ where })
-    ]);
 
-    return {
-      logs,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit)
-    };
-  } catch (error) {
-    throw new ApiError(500, 'Failed to fetch audit logs');
+
+    async exportUsers(filters: any) {
+    try {
+      const users = await prisma.user.findMany({
+        include: {
+          userClubs: {
+            include: {
+              club: {
+                select: { name: true, category: true }
+              }
+            }
+          },
+          eventRegistrations: {
+            where: { attended: true }
+          }
+        }
+      });
+
+      const formattedData = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        studentId: user.studentId,
+        phone: user.phone || '',
+        department: user.department,
+        yearOfStudy: user.yearOfStudy,
+        role: user.role,
+        isVerified: user.isVerified,
+        totalPoints: user.totalPoints,
+        totalVolunteerHours: user.totalVolunteerHours,
+        clubsJoined: user.userClubs.length,
+        eventsAttended: user.eventRegistrations.length,
+        createdAt: user.createdAt.toISOString(),
+        lastLogin: user.updatedAt.toISOString()
+      }));
+
+      const fields = [
+        'id', 'email', 'firstName', 'lastName', 'studentId', 'phone',
+        'department', 'yearOfStudy', 'role', 'isVerified',
+        'totalPoints', 'totalVolunteerHours', 'clubsJoined', 'eventsAttended',
+        'createdAt', 'lastLogin'
+      ];
+
+      const parser = new Parser({ fields });
+      return parser.parse(formattedData);
+    } catch (error) {
+      throw new ApiError(500, 'Failed to export users');
+    }
   }
+
+  async exportClubs(filters: any) {
+    try {
+      const clubs = await prisma.club.findMany({
+        include: {
+          userClubs: {
+            where: { isActive: true }
+          },
+          events: {
+            include: {
+              eventRegistrations: true
+            }
+          },
+          creator: {
+            select: { firstName: true, lastName: true, email: true }
+          }
+        }
+      });
+
+      const formattedData = clubs.map(club => {
+        const totalEvents = club.events.length;
+        const totalRegistrations = club.events.reduce((sum, event) => sum + event.eventRegistrations.length, 0);
+        const totalAttendance = club.events.reduce(
+          (sum, event) => sum + event.eventRegistrations.filter((reg: any) => reg.attended).length, 0
+        );
+
+        return {
+          id: club.id,
+          name: club.name,
+          category: club.category,
+          description: club.description || '',
+          memberCount: club.userClubs.length,
+          eventCount: totalEvents,
+          totalRegistrations,
+          totalAttendance,
+          attendanceRate: totalRegistrations > 0 ? ((totalAttendance / totalRegistrations) * 100).toFixed(2) : '0',
+          isActive: club.isActive,
+          createdBy: `${club.creator?.firstName} ${club.creator?.lastName}`,
+          createdByEmail: club.creator?.email,
+          createdAt: club.createdAt.toISOString()
+        };
+      });
+
+      const fields = [
+        'id', 'name', 'category', 'description', 'memberCount', 'eventCount',
+        'totalRegistrations', 'totalAttendance', 'attendanceRate', 'isActive',
+        'createdBy', 'createdByEmail', 'createdAt'
+      ];
+
+      const parser = new Parser({ fields });
+      return parser.parse(formattedData);
+    } catch (error) {
+      throw new ApiError(500, 'Failed to export clubs');
+    }
   }
+
+  async exportEvents(filters: any) {
+    try {
+      const events = await prisma.event.findMany({
+        include: {
+          club: {
+            select: { name: true, category: true }
+          },
+          eventRegistrations: true,
+          creator: {
+            select: { firstName: true, lastName: true }
+          }
+        }
+      });
+
+      const formattedData = events.map(event => {
+        const totalRegistrations = event.eventRegistrations.length;
+        const totalAttendance = event.eventRegistrations.filter((reg: any) => reg.attended).length;
+
+        return {
+          id: event.id,
+          title: event.title,
+          clubName: event.club.name,
+          clubCategory: event.club.category,
+          eventType: event.eventType,
+          startDate: event.startDate.toISOString(),
+          endDate: event.endDate.toISOString(),
+          // venue: event.venue || '',
+          maxParticipants: event.maxParticipants || '',
+          totalRegistrations,
+          totalAttendance,
+          attendanceRate: totalRegistrations > 0 ? ((totalAttendance / totalRegistrations) * 100).toFixed(2) : '0',
+          pointsReward: event.pointsReward,
+          volunteerHours: event.volunteerHours || 0,
+          isPublished: event.isPublished,
+          createdBy: `${event.creator?.firstName} ${event.creator?.lastName}`,
+          createdAt: event.createdAt.toISOString()
+        };
+      });
+
+      const fields = [
+        'id', 'title', 'clubName', 'clubCategory', 'eventType',
+        'startDate', 'endDate', 'venue', 'maxParticipants',
+        'totalRegistrations', 'totalAttendance', 'attendanceRate',
+        'pointsReward', 'volunteerHours', 'isPublished', 'createdBy', 'createdAt'
+      ];
+
+      const parser = new Parser({ fields });
+      return parser.parse(formattedData);
+    } catch (error) {
+      throw new ApiError(500, 'Failed to export events');
+    }
+  }
+
+    /**
+   * Simple wrapper for dashboard analytics summary
+   */
+  async getStatistics() {
+    try {
+      return await this.getDashboardAnalytics();
+    } catch (error) {
+      throw new ApiError(500, 'Failed to fetch statistics');
+    }
+  }
+
+  /**
+   * Fetch users with optional filters (shortcut for getAllUsers)
+   */
+  async getUsers(filters: any = {}, page: number = 1, limit: number = 10) {
+    try {
+      return await this.getAllUsers(filters, page, limit);
+    } catch (error) {
+      throw new ApiError(500, 'Failed to fetch users');
+    }
+  }
+
+  /**
+   * Fetch clubs with optional filters (shortcut for getClubs)
+   */
+  async getAllClubs(filters: any = {}, page = 1, limit = 10) {
+    return await this.getClubs(filters, page, limit);
+  }
+
+  /**
+   * Fetch events with optional filters (shortcut for getAllEvents)
+   */
+  async getEvents(filters: any = {}, page: number = 1, limit: number = 10) {
+    try {
+      return await this.getAllEvents(filters, page, limit);
+    } catch (error) {
+      throw new ApiError(500, 'Failed to fetch events');
+    }
+  }
+
 }

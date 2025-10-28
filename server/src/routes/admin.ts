@@ -57,4 +57,9 @@ router.post('/system/maintenance', createRateLimiter({ windowMs: 60 * 60 * 1000,
 // Audit logs
 router.get('/audit-logs', adminController.getAuditLogs);
 
+router.get(
+  '/export/:type',
+  adminController.exportData.bind(adminController)
+);
+
 export default router;

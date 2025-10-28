@@ -141,7 +141,7 @@ const Register = () => {
           setShowResendOption(true);
           toast.error(errorMessage, { duration: 8000 });
         } else if (errorMessage.includes('already exists') || errorMessage.includes('already registered')) {
-          toast.error('This email is already registered. Please try logging in instead.', { 
+          toast.error('Registration successful! Please check your email to verify your account.', { 
             duration: 5000,
           });
           // Redirect to login after 2 seconds

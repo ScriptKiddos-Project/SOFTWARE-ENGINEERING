@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 // Types and Utils - go up two folders to src/
 import { UserClub } from '../../types/club';
 import { formatDate } from '../../utils/dateUtils';
+import { useNavigate } from 'react-router-dom';
 
 
 interface JoinedClubsProps {
@@ -28,6 +29,7 @@ export const JoinedClubs: React.FC<JoinedClubsProps> = ({
   const activeClubs = userClubs.filter(uc => uc.isActive);
   const adminClubs = activeClubs.filter(uc => ['admin', 'president', 'vice_president'].includes(uc.role));
   const memberClubs = activeClubs.filter(uc => !['admin', 'president', 'vice_president'].includes(uc.role));
+  const navigate = useNavigate();
 
   const getRoleIcon = (role: string) => {
     if (['president', 'vice_president', 'admin'].includes(role)) {
@@ -118,7 +120,7 @@ export const JoinedClubs: React.FC<JoinedClubsProps> = ({
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No clubs joined yet</h3>
           <p className="text-gray-600 mb-4">Start your journey by joining some clubs!</p>
-          <Button>Explore Clubs</Button>
+          <Button onClick={() => navigate('/clubs')}>Explore Clubs</Button>
         </CardContent>
       </Card>
     );

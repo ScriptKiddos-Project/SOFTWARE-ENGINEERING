@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'admin@clubhub.com'; // 👈 change this to the user's email
+  const email = 'rhitikavishwakarma7@gmail.com'; // 👈 change this to the user's email
 
   const user = await prisma.user.findUnique({
     where: { email },

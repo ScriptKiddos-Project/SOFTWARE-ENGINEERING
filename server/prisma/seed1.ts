@@ -1,12 +1,11 @@
 import { PrismaClient, RegistrationStatus, AttendanceMethod, ClubMemberRole } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seeding...\n');
 
-  // Clear existing data (optional - comment out if you want to keep existing data)
+  // Clear existing data (keeps users intact)
   console.log('🗑️  Cleaning existing data...');
   await prisma.eventFeedback.deleteMany();
   await prisma.eventRegistration.deleteMany();
@@ -18,249 +17,25 @@ async function main() {
   await prisma.chatMessage.deleteMany();
   await prisma.chatRoom.deleteMany();
   await prisma.notification.deleteMany();
+  await prisma.announcement.deleteMany();
   await prisma.event.deleteMany();
   await prisma.userClub.deleteMany();
   await prisma.club.deleteMany();
-  await prisma.user.deleteMany();
+  // NOTE: NOT deleting users - they register via signup
 
-  // Hash password once for all users
-  const hashedPassword = await bcrypt.hash('password123', 10);
-
-  // ==================== USERS ====================
-  console.log('👥 Creating users...');
-  
-  const superAdmin = await prisma.user.create({
-    data: {
-      email: 'admin@college.edu',
-      passwordHash: hashedPassword,
-      firstName: 'Admin',
-      lastName: 'User',
-      studentId: 'ADMIN001',
-      phone: '+91-9876543210',
-      department: 'Administration',
-      yearOfStudy: 4,
-      role: 'super_admin',
-      isVerified: true,
-      totalPoints: 500,
-      totalVolunteerHours: 20,
-    },
+  // Get existing users to assign as club creators
+  const existingUsers = await prisma.user.findMany({
+    orderBy: { createdAt: 'asc' },
+    take: 5,
   });
 
-  const clubAdmins = await Promise.all([
-    prisma.user.create({
-      data: {
-        email: 'priya.sharma@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Priya',
-        lastName: 'Sharma',
-        studentId: 'CS2021001',
-        phone: '+91-9876543211',
-        department: 'Computer Science',
-        yearOfStudy: 3,
-        role: 'club_admin',
-        isVerified: true,
-        totalPoints: 850,
-        totalVolunteerHours: 35,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'rahul.mehta@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Rahul',
-        lastName: 'Mehta',
-        studentId: 'EC2020045',
-        phone: '+91-9876543212',
-        department: 'Electronics',
-        yearOfStudy: 4,
-        role: 'club_admin',
-        isVerified: true,
-        totalPoints: 720,
-        totalVolunteerHours: 28,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'ananya.patel@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Ananya',
-        lastName: 'Patel',
-        studentId: 'ME2021089',
-        phone: '+91-9876543213',
-        department: 'Mechanical',
-        yearOfStudy: 3,
-        role: 'club_admin',
-        isVerified: true,
-        totalPoints: 680,
-        totalVolunteerHours: 30,
-      },
-    }),
-  ]);
+  if (existingUsers.length === 0) {
+    console.log('⚠️  No users found. Please register users first before running seed.');
+    return;
+  }
 
-  const students = await Promise.all([
-    prisma.user.create({
-      data: {
-        email: 'arjun.singh@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Arjun',
-        lastName: 'Singh',
-        studentId: 'CS2022156',
-        phone: '+91-9876543214',
-        department: 'Computer Science',
-        yearOfStudy: 2,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 420,
-        totalVolunteerHours: 15,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'sneha.reddy@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Sneha',
-        lastName: 'Reddy',
-        studentId: 'IT2022187',
-        phone: '+91-9876543215',
-        department: 'Information Technology',
-        yearOfStudy: 2,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 380,
-        totalVolunteerHours: 12,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'vikram.kumar@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Vikram',
-        lastName: 'Kumar',
-        studentId: 'EC2023201',
-        phone: '+91-9876543216',
-        department: 'Electronics',
-        yearOfStudy: 1,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 250,
-        totalVolunteerHours: 8,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'diya.gupta@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Diya',
-        lastName: 'Gupta',
-        studentId: 'CS2023245',
-        phone: '+91-9876543217',
-        department: 'Computer Science',
-        yearOfStudy: 1,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 190,
-        totalVolunteerHours: 5,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'karan.joshi@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Karan',
-        lastName: 'Joshi',
-        studentId: 'ME2022167',
-        phone: '+91-9876543218',
-        department: 'Mechanical',
-        yearOfStudy: 2,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 340,
-        totalVolunteerHours: 10,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'ishita.verma@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Ishita',
-        lastName: 'Verma',
-        studentId: 'CE2021134',
-        phone: '+91-9876543219',
-        department: 'Civil Engineering',
-        yearOfStudy: 3,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 560,
-        totalVolunteerHours: 22,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'aditya.nair@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Aditya',
-        lastName: 'Nair',
-        studentId: 'IT2021178',
-        phone: '+91-9876543220',
-        department: 'Information Technology',
-        yearOfStudy: 3,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 480,
-        totalVolunteerHours: 18,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'pooja.desai@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Pooja',
-        lastName: 'Desai',
-        studentId: 'CS2020089',
-        phone: '+91-9876543221',
-        department: 'Computer Science',
-        yearOfStudy: 4,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 620,
-        totalVolunteerHours: 25,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'rohan.iyer@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Rohan',
-        lastName: 'Iyer',
-        studentId: 'EC2022134',
-        phone: '+91-9876543222',
-        department: 'Electronics',
-        yearOfStudy: 2,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 290,
-        totalVolunteerHours: 9,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: 'neha.bhatt@college.edu',
-        passwordHash: hashedPassword,
-        firstName: 'Neha',
-        lastName: 'Bhatt',
-        studentId: 'ME2023198',
-        phone: '+91-9876543223',
-        department: 'Mechanical',
-        yearOfStudy: 1,
-        role: 'student',
-        isVerified: true,
-        totalPoints: 150,
-        totalVolunteerHours: 4,
-      },
-    }),
-  ]);
-
-  console.log(`✅ Created ${students.length + clubAdmins.length + 1} users\n`);
+  const defaultCreator = existingUsers[0].id;
+  console.log(`ℹ️  Using ${existingUsers.length} existing users for seed data\n`);
 
   // ==================== CLUBS ====================
   console.log('🏛️  Creating clubs...');
@@ -277,7 +52,7 @@ async function main() {
         contactEmail: 'codecraft@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -290,7 +65,7 @@ async function main() {
         contactEmail: 'aiml@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -303,7 +78,7 @@ async function main() {
         contactEmail: 'robotics@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[1].id,
+        createdBy: existingUsers[1]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -316,10 +91,9 @@ async function main() {
         contactEmail: 'cybersec@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[1].id,
+        createdBy: existingUsers[1]?.id || defaultCreator,
       },
     }),
-
     // Cultural Clubs
     prisma.club.create({
       data: {
@@ -331,7 +105,7 @@ async function main() {
         contactEmail: 'rhythmica@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -344,7 +118,7 @@ async function main() {
         contactEmail: 'melodia@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -357,10 +131,9 @@ async function main() {
         contactEmail: 'theatrica@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: superAdmin.id,
+        createdBy: defaultCreator,
       },
     }),
-
     // Sports Clubs
     prisma.club.create({
       data: {
@@ -372,7 +145,7 @@ async function main() {
         contactEmail: 'cricket@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: superAdmin.id,
+        createdBy: defaultCreator,
       },
     }),
     prisma.club.create({
@@ -385,10 +158,9 @@ async function main() {
         contactEmail: 'fitness@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[4].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
-
     // Academic Clubs
     prisma.club.create({
       data: {
@@ -400,7 +172,7 @@ async function main() {
         contactEmail: 'mathcircle@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[5].id,
+        createdBy: existingUsers[4]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -413,10 +185,9 @@ async function main() {
         contactEmail: 'innovators@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
-
     // Social Service Clubs
     prisma.club.create({
       data: {
@@ -428,7 +199,7 @@ async function main() {
         contactEmail: 'greenearth@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[5].id,
+        createdBy: existingUsers[4]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -441,10 +212,9 @@ async function main() {
         contactEmail: 'seva@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[5].id,
+        createdBy: existingUsers[4]?.id || defaultCreator,
       },
     }),
-
     // Entrepreneurship Clubs
     prisma.club.create({
       data: {
@@ -456,10 +226,9 @@ async function main() {
         contactEmail: 'startup@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
-
     // Arts Clubs
     prisma.club.create({
       data: {
@@ -471,7 +240,7 @@ async function main() {
         contactEmail: 'artistry@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[7].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
     prisma.club.create({
@@ -484,10 +253,9 @@ async function main() {
         contactEmail: 'shutterbugs@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[6].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
-
     // Other
     prisma.club.create({
       data: {
@@ -499,130 +267,12 @@ async function main() {
         contactEmail: 'literary@college.edu',
         isActive: true,
         memberCount: 0,
-        createdBy: students[7].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
   ]);
 
   console.log(`✅ Created ${clubs.length} clubs\n`);
-
-  // ==================== CLUB MEMBERSHIPS ====================
-  console.log('👤 Creating club memberships...');
-
-  // Assign club admin roles
-  await prisma.userClub.create({
-    data: {
-      userId: clubAdmins[0].id,
-      clubId: clubs[0].id, // CodeCraft
-      role: ClubMemberRole.president,
-    },
-  });
-
-  await prisma.userClub.create({
-    data: {
-      userId: clubAdmins[0].id,
-      clubId: clubs[1].id, // AI & ML
-      role: ClubMemberRole.vice_president,
-    },
-  });
-
-  await prisma.userClub.create({
-    data: {
-      userId: clubAdmins[1].id,
-      clubId: clubs[2].id, // Robotics
-      role: ClubMemberRole.president,
-    },
-  });
-
-  await prisma.userClub.create({
-    data: {
-      userId: clubAdmins[1].id,
-      clubId: clubs[3].id, // CyberSec
-      role: ClubMemberRole.secretary,
-    },
-  });
-
-  await prisma.userClub.create({
-    data: {
-      userId: clubAdmins[2].id,
-      clubId: clubs[4].id, // Rhythmica
-      role: ClubMemberRole.president,
-    },
-  });
-
-  await prisma.userClub.create({
-    data: {
-      userId: clubAdmins[2].id,
-      clubId: clubs[5].id, // Melodia
-      role: ClubMemberRole.vice_president,
-    },
-  });
-
-  // Add students to various clubs
-  const studentClubMemberships = [
-    // Student 0 - Arjun Singh (Technical clubs)
-    { userId: students[0].id, clubId: clubs[0].id, role: ClubMemberRole.core_member },
-    { userId: students[0].id, clubId: clubs[1].id, role: ClubMemberRole.member },
-    { userId: students[0].id, clubId: clubs[3].id, role: ClubMemberRole.member },
-    
-    // Student 1 - Sneha Reddy (Technical + Cultural)
-    { userId: students[1].id, clubId: clubs[0].id, role: ClubMemberRole.member },
-    { userId: students[1].id, clubId: clubs[4].id, role: ClubMemberRole.core_member },
-    { userId: students[1].id, clubId: clubs[15].id, role: ClubMemberRole.member },
-    
-    // Student 2 - Vikram Kumar (Technical + Sports)
-    { userId: students[2].id, clubId: clubs[2].id, role: ClubMemberRole.member },
-    { userId: students[2].id, clubId: clubs[7].id, role: ClubMemberRole.core_member },
-    { userId: students[2].id, clubId: clubs[8].id, role: ClubMemberRole.member },
-    
-    // Student 3 - Diya Gupta (AI & Arts)
-    { userId: students[3].id, clubId: clubs[1].id, role: ClubMemberRole.member },
-    { userId: students[3].id, clubId: clubs[14].id, role: ClubMemberRole.secretary },
-    { userId: students[3].id, clubId: clubs[15].id, role: ClubMemberRole.core_member },
-    
-    // Student 4 - Karan Joshi (Sports + Academic)
-    { userId: students[4].id, clubId: clubs[8].id, role: ClubMemberRole.president },
-    { userId: students[4].id, clubId: clubs[9].id, role: ClubMemberRole.member },
-    { userId: students[4].id, clubId: clubs[10].id, role: ClubMemberRole.member },
-    
-    // Student 5 - Ishita Verma (Social Service + Academic)
-    { userId: students[5].id, clubId: clubs[11].id, role: ClubMemberRole.president },
-    { userId: students[5].id, clubId: clubs[12].id, role: ClubMemberRole.vice_president },
-    { userId: students[5].id, clubId: clubs[9].id, role: ClubMemberRole.core_member },
-    
-    // Student 6 - Aditya Nair (Entrepreneurship + Technical)
-    { userId: students[6].id, clubId: clubs[13].id, role: ClubMemberRole.member },
-    { userId: students[6].id, clubId: clubs[0].id, role: ClubMemberRole.member },
-    { userId: students[6].id, clubId: clubs[10].id, role: ClubMemberRole.treasurer },
-    
-    // Student 7 - Pooja Desai (Arts + Literary)
-    { userId: students[7].id, clubId: clubs[14].id, role: ClubMemberRole.president },
-    { userId: students[7].id, clubId: clubs[16].id, role: ClubMemberRole.president },
-    { userId: students[7].id, clubId: clubs[5].id, role: ClubMemberRole.member },
-    
-    // Student 8 - Rohan Iyer (Multiple clubs)
-    { userId: students[8].id, clubId: clubs[3].id, role: ClubMemberRole.core_member },
-    { userId: students[8].id, clubId: clubs[7].id, role: ClubMemberRole.member },
-    { userId: students[8].id, clubId: clubs[13].id, role: ClubMemberRole.treasurer },
-    
-    // Student 9 - Neha Bhatt (Cultural + Arts)
-    { userId: students[9].id, clubId: clubs[4].id, role: ClubMemberRole.member },
-    { userId: students[9].id, clubId: clubs[5].id, role: ClubMemberRole.member },
-    { userId: students[9].id, clubId: clubs[15].id, role: ClubMemberRole.president },
-  ];
-
-  await prisma.userClub.createMany({ data: studentClubMemberships });
-
-  // Update member counts
-  for (const club of clubs) {
-    const count = await prisma.userClub.count({ where: { clubId: club.id } });
-    await prisma.club.update({
-      where: { id: club.id },
-      data: { memberCount: count },
-    });
-  }
-
-  console.log(`✅ Created ${studentClubMemberships.length + 6} club memberships\n`);
 
   // ==================== EVENTS ====================
   console.log('📅 Creating events...');
@@ -637,7 +287,7 @@ async function main() {
       data: {
         title: 'Python Workshop for Beginners',
         description: 'Learn Python programming from scratch. Covered basics, data structures, and built a simple web scraper project. Perfect for first-year students!',
-        clubId: clubs[0].id, // CodeCraft
+        clubId: clubs[0].id,
         eventType: 'workshop',
         startDate: pastDate(20),
         endDate: pastDate(20),
@@ -651,7 +301,7 @@ async function main() {
         skillAreas: ['Programming', 'Python', 'Web Scraping'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
@@ -672,14 +322,14 @@ async function main() {
         skillAreas: ['Full Stack', 'AI/ML', 'IoT', 'Problem Solving'],
         isPublished: true,
         requiresApproval: true,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Dance Competition - Rhythm Wars',
         description: 'College-wide dance competition featuring solo, duet, and group categories. Witnessed amazing performances across various dance forms!',
-        clubId: clubs[4].id, // Rhythmica
+        clubId: clubs[4].id,
         eventType: 'competition',
         startDate: pastDate(10),
         endDate: pastDate(10),
@@ -693,14 +343,14 @@ async function main() {
         skillAreas: ['Dance', 'Performance', 'Stage Presence'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Tree Plantation Drive',
         description: 'Successfully planted 500+ trees in the college campus and nearby areas. Thank you to all volunteers who made this possible!',
-        clubId: clubs[11].id, // Green Earth
+        clubId: clubs[11].id,
         eventType: 'volunteering',
         startDate: pastDate(8),
         endDate: pastDate(8),
@@ -714,14 +364,14 @@ async function main() {
         skillAreas: ['Environmental Awareness', 'Teamwork'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[5].id,
+        createdBy: existingUsers[4]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'AI in Healthcare - Guest Lecture',
         description: 'Industry expert Dr. Rajesh Malhotra discussed applications of AI/ML in medical diagnosis, drug discovery, and personalized medicine.',
-        clubId: clubs[1].id, // AI & ML
+        clubId: clubs[1].id,
         eventType: 'seminar',
         startDate: pastDate(5),
         endDate: pastDate(5),
@@ -735,16 +385,15 @@ async function main() {
         skillAreas: ['Artificial Intelligence', 'Healthcare Tech'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
-
     // ONGOING/RECENT EVENTS
     prisma.event.create({
       data: {
         title: 'Inter-College Cricket Tournament',
         description: 'Annual cricket championship with teams from 8 colleges. Currently in semi-finals! Come support our team at the finals this weekend.',
-        clubId: clubs[7].id, // Cricket
+        clubId: clubs[7].id,
         eventType: 'sports_event',
         startDate: pastDate(2),
         endDate: futureDate(2),
@@ -758,14 +407,14 @@ async function main() {
         skillAreas: ['Cricket', 'Sportsmanship', 'Teamwork'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: superAdmin.id,
+        createdBy: defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Photography Exhibition - "Perspectives"',
         description: 'Showcasing the best photography work by our club members. Exhibition features landscape, portrait, wildlife, and street photography.',
-        clubId: clubs[15].id, // Shutterbugs
+        clubId: clubs[15].id,
         eventType: 'cultural_event',
         startDate: pastDate(1),
         endDate: futureDate(3),
@@ -779,16 +428,15 @@ async function main() {
         skillAreas: ['Photography', 'Visual Arts'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[9].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
-
     // UPCOMING EVENTS
     prisma.event.create({
       data: {
         title: 'Web Development Bootcamp',
         description: 'Intensive 3-day bootcamp covering HTML, CSS, JavaScript, React, and Node.js. Build a full-stack project and deploy it live!',
-        clubId: clubs[0].id, // CodeCraft
+        clubId: clubs[0].id,
         eventType: 'workshop',
         startDate: futureDate(5),
         endDate: futureDate(7),
@@ -802,14 +450,14 @@ async function main() {
         skillAreas: ['Web Development', 'React', 'Node.js', 'Full Stack'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Cybersecurity CTF Challenge',
         description: 'Capture The Flag competition! Solve challenges in cryptography, web exploitation, reverse engineering, and forensics. Prizes for top 3 teams!',
-        clubId: clubs[3].id, // CyberSec
+        clubId: clubs[3].id,
         eventType: 'competition',
         startDate: futureDate(7),
         endDate: futureDate(7),
@@ -823,14 +471,14 @@ async function main() {
         skillAreas: ['Cybersecurity', 'Ethical Hacking', 'Problem Solving'],
         isPublished: true,
         requiresApproval: true,
-        createdBy: clubAdmins[1].id,
+        createdBy: existingUsers[1]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Robotics Workshop - Line Following Robot',
         description: 'Hands-on workshop on building and programming line-following robots using Arduino. Learn sensor integration and PID control!',
-        clubId: clubs[2].id, // Robotics
+        clubId: clubs[2].id,
         eventType: 'workshop',
         startDate: futureDate(10),
         endDate: futureDate(10),
@@ -844,14 +492,14 @@ async function main() {
         skillAreas: ['Robotics', 'Arduino', 'Electronics', 'Programming'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[1].id,
+        createdBy: existingUsers[1]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Annual Cultural Fest - "Utsav 2024"',
         description: 'Our biggest cultural extravaganza! Dance, music, drama, fashion show, and more. 3 days of non-stop entertainment and performances!',
-        clubId: clubs[4].id, // Rhythmica
+        clubId: clubs[4].id,
         eventType: 'cultural_event',
         startDate: futureDate(12),
         endDate: futureDate(14),
@@ -865,14 +513,14 @@ async function main() {
         skillAreas: ['Performance', 'Cultural Arts', 'Event Management'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Blood Donation Camp',
         description: 'Save lives by donating blood! Organized in partnership with City Blood Bank. All donors receive certificates and refreshments.',
-        clubId: clubs[12].id, // Seva Foundation
+        clubId: clubs[12].id,
         eventType: 'volunteering',
         startDate: futureDate(15),
         endDate: futureDate(15),
@@ -886,14 +534,14 @@ async function main() {
         skillAreas: ['Social Service', 'Healthcare Awareness'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[5].id,
+        createdBy: existingUsers[4]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Startup Pitch Competition',
         description: 'Present your startup ideas to investors and industry experts. Win seed funding up to ₹5 Lakhs and mentorship opportunities!',
-        clubId: clubs[13].id, // StartUp Incubator
+        clubId: clubs[13].id,
         eventType: 'competition',
         startDate: futureDate(18),
         endDate: futureDate(18),
@@ -907,14 +555,14 @@ async function main() {
         skillAreas: ['Entrepreneurship', 'Business Planning', 'Pitching'],
         isPublished: true,
         requiresApproval: true,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Machine Learning Study Group',
         description: 'Weekly study sessions on ML algorithms, deep learning, and practical implementations. This week: Neural Networks from Scratch!',
-        clubId: clubs[1].id, // AI & ML
+        clubId: clubs[1].id,
         eventType: 'workshop',
         startDate: futureDate(20),
         endDate: futureDate(20),
@@ -928,14 +576,14 @@ async function main() {
         skillAreas: ['Machine Learning', 'Deep Learning', 'Python'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Music Concert - "Melodic Nights"',
         description: 'Live performances by college bands and solo artists. Featuring rock, pop, classical, and fusion music. Open to all!',
-        clubId: clubs[5].id, // Melodia
+        clubId: clubs[5].id,
         eventType: 'cultural_event',
         startDate: futureDate(22),
         endDate: futureDate(22),
@@ -949,14 +597,14 @@ async function main() {
         skillAreas: ['Music', 'Performance'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: clubAdmins[2].id,
+        createdBy: existingUsers[2]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Mathematics Olympiad Preparation',
         description: 'Intensive preparation sessions for upcoming math olympiads. Problem-solving techniques and past year questions discussion.',
-        clubId: clubs[9].id, // Mathematics Circle
+        clubId: clubs[9].id,
         eventType: 'workshop',
         startDate: futureDate(25),
         endDate: futureDate(25),
@@ -970,14 +618,14 @@ async function main() {
         skillAreas: ['Mathematics', 'Problem Solving', 'Logical Thinking'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[5].id,
+        createdBy: existingUsers[4]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Street Play on Social Issues',
         description: 'Theatrical street performances addressing social issues like gender equality, environmental conservation, and mental health awareness.',
-        clubId: clubs[6].id, // Theatrica
+        clubId: clubs[6].id,
         eventType: 'cultural_event',
         startDate: futureDate(28),
         endDate: futureDate(28),
@@ -991,14 +639,14 @@ async function main() {
         skillAreas: ['Acting', 'Theatre', 'Social Awareness'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: superAdmin.id,
+        createdBy: defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Innovation Summit 2024',
         description: 'Showcase your innovative projects and research! Poster presentations, product demos, and networking with faculty and industry professionals.',
-        clubId: clubs[10].id, // Innovators Lab
+        clubId: clubs[10].id,
         eventType: 'conference',
         startDate: futureDate(30),
         endDate: futureDate(30),
@@ -1012,14 +660,14 @@ async function main() {
         skillAreas: ['Research', 'Innovation', 'Presentation'],
         isPublished: true,
         requiresApproval: true,
-        createdBy: clubAdmins[0].id,
+        createdBy: existingUsers[0]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Fitness Challenge - 30 Days Transformation',
         description: 'Join our 30-day fitness challenge! Daily workout sessions, diet plans, and progress tracking. Transform your lifestyle!',
-        clubId: clubs[8].id, // Fitness Freaks
+        clubId: clubs[8].id,
         eventType: 'sports_event',
         startDate: futureDate(35),
         endDate: futureDate(65),
@@ -1033,14 +681,14 @@ async function main() {
         skillAreas: ['Fitness', 'Discipline', 'Health Management'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[4].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Art Exhibition - "Colors of Imagination"',
         description: 'Annual art exhibition featuring paintings, sculptures, and digital art by talented student artists. All artworks available for sale!',
-        clubId: clubs[14].id, // Artistry
+        clubId: clubs[14].id,
         eventType: 'cultural_event',
         startDate: futureDate(40),
         endDate: futureDate(42),
@@ -1054,14 +702,14 @@ async function main() {
         skillAreas: ['Visual Arts', 'Creativity'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[7].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
     prisma.event.create({
       data: {
         title: 'Creative Writing Workshop',
         description: 'Learn storytelling techniques, poetry writing, and publishing your work. Session by published author and alumni Kritika Desai.',
-        clubId: clubs[16].id, // Literary Society
+        clubId: clubs[16].id,
         eventType: 'workshop',
         startDate: futureDate(45),
         endDate: futureDate(45),
@@ -1075,496 +723,18 @@ async function main() {
         skillAreas: ['Creative Writing', 'Storytelling', 'Literature'],
         isPublished: true,
         requiresApproval: false,
-        createdBy: students[7].id,
+        createdBy: existingUsers[3]?.id || defaultCreator,
       },
     }),
   ]);
 
   console.log(`✅ Created ${events.length} events\n`);
 
-  // ==================== EVENT REGISTRATIONS ====================
-  console.log('📝 Creating event registrations...');
-
-  const registrations = [];
-
-  // Past Event: Python Workshop - High attendance
-  for (let i = 0; i < 8; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[0].id,
-      status: RegistrationStatus.attended,
-      attended: true,
-      attendanceMarkedBy: clubAdmins[0].id,
-      attendanceMarkedAt: pastDate(20),
-      attendanceMethod: AttendanceMethod.manual,
-      checkInTime: pastDate(20),
-      pointsAwarded: 50,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Past Event: Hackathon - Mix of attended and no-show
-  for (let i = 0; i < 7; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[1].id,
-      status: i < 5 ? RegistrationStatus.attended : RegistrationStatus.no_show,
-      attended: i < 5,
-      attendanceMarkedBy: clubAdmins[0].id,
-      attendanceMarkedAt: pastDate(14),
-      attendanceMethod: AttendanceMethod.qr_code,
-      checkInTime: i < 5 ? pastDate(15) : null,
-      pointsAwarded: i < 5 ? 150 : 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Past Event: Dance Competition
-  for (let i = 0; i < 6; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[2].id,
-      status: RegistrationStatus.attended,
-      attended: true,
-      attendanceMarkedBy: clubAdmins[2].id,
-      attendanceMarkedAt: pastDate(10),
-      attendanceMethod: AttendanceMethod.manual,
-      checkInTime: pastDate(10),
-      pointsAwarded: 100,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Past Event: Tree Plantation - Volunteer hours
-  for (let i = 0; i < 9; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[3].id,
-      status: RegistrationStatus.attended,
-      attended: true,
-      attendanceMarkedBy: students[5].id,
-      attendanceMarkedAt: pastDate(8),
-      attendanceMethod: AttendanceMethod.manual,
-      checkInTime: pastDate(8),
-      pointsAwarded: 30,
-      volunteerHoursAwarded: 4,
-    });
-  }
-
-  // Past Event: AI Seminar
-  for (let i = 0; i < 10; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[4].id,
-      status: i < 8 ? RegistrationStatus.attended : RegistrationStatus.no_show,
-      attended: i < 8,
-      attendanceMarkedBy: clubAdmins[0].id,
-      attendanceMarkedAt: pastDate(5),
-      attendanceMethod: AttendanceMethod.qr_code,
-      checkInTime: i < 8 ? pastDate(5) : null,
-      pointsAwarded: i < 8 ? 40 : 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Ongoing: Cricket Tournament
-  for (let i = 0; i < 6; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[5].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Ongoing: Photography Exhibition
-  for (let i = 0; i < 5; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[6].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Upcoming: Web Dev Bootcamp
-  for (let i = 0; i < 8; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[7].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Upcoming: CTF Challenge
-  for (let i = 0; i < 6; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[8].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Upcoming: Cultural Fest
-  for (let i = 0; i < 10; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[10].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Upcoming: Blood Donation
-  for (let i = 0; i < 7; i++) {
-    registrations.push({
-      userId: students[i].id,
-      eventId: events[11].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    });
-  }
-
-  // Add club admin registrations
-  registrations.push(
-    {
-      userId: clubAdmins[0].id,
-      eventId: events[0].id,
-      status: RegistrationStatus.attended,
-      attended: true,
-      checkInTime: pastDate(20),
-      pointsAwarded: 50,
-      volunteerHoursAwarded: 0,
-    },
-    {
-      userId: clubAdmins[1].id,
-      eventId: events[8].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    },
-    {
-      userId: clubAdmins[2].id,
-      eventId: events[10].id,
-      status: RegistrationStatus.registered,
-      attended: false,
-      pointsAwarded: 0,
-      volunteerHoursAwarded: 0,
-    }
-  );
-
-  await prisma.eventRegistration.createMany({ data: registrations });
-
-  console.log(`✅ Created ${registrations.length} event registrations\n`);
-
-  // ==================== POINTS HISTORY ====================
-  console.log('🏆 Creating points history...');
-
-  const pointsHistory = registrations
-    .filter(r => r.pointsAwarded > 0)
-    .map(r => ({
-      userId: r.userId,
-      eventId: r.eventId,
-      pointsEarned: r.pointsAwarded,
-      volunteerHoursEarned: r.volunteerHoursAwarded,
-      reason: 'Event attendance',
-      createdAt: r.checkInTime || new Date(),
-    }));
-
-  await prisma.pointsHistory.createMany({ data: pointsHistory });
-
-  console.log(`✅ Created ${pointsHistory.length} points history records\n`);
-
-  // ==================== BADGES ====================
-  console.log('🎖️  Creating badges...');
-
-  const badges = await Promise.all([
-    prisma.badge.create({
-      data: {
-        name: 'Early Adopter',
-        description: 'Joined the platform in the first month',
-        icon: '🌟',
-        criteria: JSON.stringify({ type: 'early_user', days: 30 }),
-      },
-    }),
-    prisma.badge.create({
-      data: {
-        name: 'Event Enthusiast',
-        description: 'Attended 10+ events',
-        icon: '🎉',
-        criteria: JSON.stringify({ type: 'events_attended', count: 10 }),
-      },
-    }),
-    prisma.badge.create({
-      data: {
-        name: 'Volunteer Hero',
-        description: 'Completed 20+ volunteer hours',
-        icon: '❤️',
-        criteria: JSON.stringify({ type: 'volunteer_hours', hours: 20 }),
-      },
-    }),
-    prisma.badge.create({
-      data: {
-        name: 'Point Master',
-        description: 'Earned 500+ points',
-        icon: '⭐',
-        criteria: JSON.stringify({ type: 'total_points', points: 500 }),
-      },
-    }),
-    prisma.badge.create({
-      data: {
-        name: 'Club Leader',
-        description: 'President or Vice President of a club',
-        icon: '👑',
-        criteria: JSON.stringify({ type: 'club_role', role: ['president', 'vice_president'] }),
-      },
-    }),
-  ]);
-
-  // Award badges to deserving users
-  const userBadges = [
-    { userId: clubAdmins[0].id, badgeId: badges[1].id }, // Event Enthusiast
-    { userId: clubAdmins[0].id, badgeId: badges[3].id }, // Point Master
-    { userId: clubAdmins[0].id, badgeId: badges[4].id }, // Club Leader
-    { userId: students[5].id, badgeId: badges[2].id }, // Volunteer Hero
-    { userId: students[5].id, badgeId: badges[4].id }, // Club Leader
-    { userId: students[7].id, badgeId: badges[4].id }, // Club Leader
-  ];
-
-  await prisma.userBadge.createMany({ data: userBadges });
-
-  console.log(`✅ Created ${badges.length} badges and ${userBadges.length} user badges\n`);
-
-  // ==================== NOTIFICATIONS ====================
-  console.log('🔔 Creating notifications...');
-
-  const notifications = [];
-  for (const student of students.slice(0, 5)) {
-    notifications.push(
-      {
-        userId: student.id,
-        title: 'Welcome to ClubHub!',
-        message: 'Start exploring clubs and events. Join clubs that match your interests!',
-        type: 'system_notification',
-        isRead: true,
-        createdAt: pastDate(25),
-      },
-      {
-        userId: student.id,
-        title: 'New Event: Web Development Bootcamp',
-        message: 'CodeCraft is organizing a 3-day Web Development Bootcamp. Register now!',
-        type: 'event_reminder',
-        isRead: false,
-        actionUrl: `/events/${events[7].id}`,
-        createdAt: futureDate(-1),
-      },
-      {
-        userId: student.id,
-        title: 'Event Reminder: Cultural Fest Tomorrow!',
-        message: 'Don\'t miss Utsav 2024 starting tomorrow. Check your registration details.',
-        type: 'event_reminder',
-        isRead: false,
-        actionUrl: `/events/${events[10].id}`,
-        createdAt: futureDate(11),
-      }
-    );
-  }
-
-  await prisma.notification.createMany({ data: notifications });
-
-  console.log(`✅ Created ${notifications.length} notifications\n`);
-
-  // ==================== EVENT FEEDBACK ====================
-  console.log('💬 Creating event feedback...');
-
-  const feedbackData = [
-    {
-      userId: students[0].id,
-      eventId: events[0].id,
-      rating: 5,
-      feedback: 'Excellent workshop! The instructor explained concepts very clearly and the hands-on project was super helpful.',
-      anonymous: false,
-    },
-    {
-      userId: students[1].id,
-      eventId: events[0].id,
-      rating: 4,
-      feedback: 'Great content, but could have been a bit longer. Would love more advanced topics next time.',
-      anonymous: false,
-    },
-    {
-      userId: students[0].id,
-      eventId: events[1].id,
-      rating: 5,
-      feedback: 'Amazing hackathon experience! Great organization, helpful mentors, and exciting challenges.',
-      anonymous: false,
-    },
-    {
-      userId: students[2].id,
-      eventId: events[1].id,
-      rating: 5,
-      feedback: 'Best hackathon I\'ve participated in. The prizes were great and learned a lot from other teams!',
-      anonymous: true,
-    },
-    {
-      userId: students[1].id,
-      eventId: events[2].id,
-      rating: 5,
-      feedback: 'Fantastic performances by all participants! The energy was incredible.',
-      anonymous: false,
-    },
-    {
-      userId: students[3].id,
-      eventId: events[3].id,
-      rating: 4,
-      feedback: 'Meaningful activity. Felt good contributing to the environment. Could have had better tools.',
-      anonymous: false,
-    },
-    {
-      userId: students[4].id,
-      eventId: events[4].id,
-      rating: 5,
-      feedback: 'Very insightful seminar. The guest speaker shared real-world applications of AI in healthcare.',
-      anonymous: true,
-    },
-  ];
-
-  await prisma.eventFeedback.createMany({ data: feedbackData });
-
-  console.log(`✅ Created ${feedbackData.length} event feedback entries\n`);
-
-  // ==================== CHAT ROOMS & MESSAGES ====================
-  console.log('💬 Creating chat rooms and messages...');
-
-  const chatRooms = await Promise.all([
-    prisma.chatRoom.create({
-      data: {
-        clubId: clubs[0].id,
-        name: 'General Discussion',
-        description: 'Main chat room for CodeCraft members',
-      },
-    }),
-    prisma.chatRoom.create({
-      data: {
-        clubId: clubs[0].id,
-        name: 'Hackathon Planning',
-        description: 'Coordination for upcoming hackathons',
-      },
-    }),
-    prisma.chatRoom.create({
-      data: {
-        clubId: clubs[4].id,
-        name: 'Dance Rehearsals',
-        description: 'Schedule and coordinate practice sessions',
-      },
-    }),
-  ]);
-
-  const chatMessages = [
-    {
-      chatRoomId: chatRooms[0].id,
-      userId: clubAdmins[0].id,
-      content: 'Hey everyone! Welcome to CodeCraft chat. Feel free to discuss projects and share resources here.',
-      createdAt: pastDate(15),
-    },
-    {
-      chatRoomId: chatRooms[0].id,
-      userId: students[0].id,
-      content: 'Thanks! Excited to be part of this club. Looking forward to the upcoming events.',
-      createdAt: pastDate(15),
-    },
-    {
-      chatRoomId: chatRooms[0].id,
-      userId: students[1].id,
-      content: 'Can someone share the Python workshop materials? I missed the last session.',
-      createdAt: pastDate(14),
-    },
-    {
-      chatRoomId: chatRooms[1].id,
-      userId: clubAdmins[0].id,
-      content: 'Planning meeting for HackNova tomorrow at 4 PM. All core members please attend.',
-      createdAt: pastDate(17),
-    },
-    {
-      chatRoomId: chatRooms[2].id,
-      userId: clubAdmins[2].id,
-      content: 'Dance practice scheduled for this Saturday at 5 PM. Don\'t be late!',
-      createdAt: pastDate(12),
-    },
-  ];
-
-  await prisma.chatMessage.createMany({ data: chatMessages });
-
-  console.log(`✅ Created ${chatRooms.length} chat rooms and ${chatMessages.length} messages\n`);
-
-  // ==================== ANNOUNCEMENTS ====================
-  console.log('📢 Creating announcements...');
-
-  const announcements = [
-    {
-      title: 'Welcome to ClubHub Platform!',
-      content: 'We are excited to launch ClubHub - your one-stop platform for all club and event activities. Explore clubs, register for events, and track your participation!',
-      type: 'general',
-      isActive: true,
-      createdBy: superAdmin.id,
-      createdAt: pastDate(30),
-    },
-    {
-      title: 'Cultural Fest Registration Open',
-      content: 'Utsav 2024 registrations are now open! Don\'t miss our biggest cultural extravaganza. Register for events today!',
-      type: 'urgent',
-      isActive: true,
-      createdBy: superAdmin.id,
-      createdAt: pastDate(5),
-    },
-    {
-      title: 'System Maintenance Scheduled',
-      content: 'Platform maintenance scheduled for next Sunday 2 AM - 4 AM. Services may be temporarily unavailable.',
-      type: 'maintenance',
-      isActive: true,
-      createdBy: superAdmin.id,
-      createdAt: pastDate(2),
-    },
-  ];
-
-  await prisma.announcement.createMany({ data: announcements });
-
-  console.log(`✅ Created ${announcements.length} announcements\n`);
-
-  // ==================== SUMMARY ====================
   console.log('✨ Seeding completed successfully!\n');
   console.log('📊 Summary:');
-  console.log(`   👥 Users: ${students.length + clubAdmins.length + 1}`);
   console.log(`   🏛️  Clubs: ${clubs.length}`);
   console.log(`   📅 Events: ${events.length}`);
-  console.log(`   🎫 Event Registrations: ${registrations.length}`);
-  console.log(`   🏆 Points History: ${pointsHistory.length}`);
-  console.log(`   🎖️  Badges: ${badges.length}`);
-  console.log(`   🔔 Notifications: ${notifications.length}`);
-  console.log(`   💬 Feedback: ${feedbackData.length}`);
-  console.log(`   💭 Chat Rooms: ${chatRooms.length}`);
-  console.log(`   📢 Announcements: ${announcements.length}\n`);
-
-  console.log('🔑 Login Credentials:');
-  console.log('   Super Admin: admin@college.edu / password123');
-  console.log('   Club Admin: priya.sharma@college.edu / password123');
-  console.log('   Student: arjun.singh@college.edu / password123');
-  console.log('   (All users have password: password123)\n');
+  console.log(`   ℹ️  Note: Using ${existingUsers.length} existing users for seed data\n`);
 }
 
 main()

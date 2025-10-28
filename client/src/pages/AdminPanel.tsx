@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
+import { useAuthStore } from '../store/authStore';
+import toast from 'react-hot-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { 
   Users, 
@@ -314,14 +316,57 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const { token } = useAuthStore();
+
   const exportData = async (type: string) => {
     try {
-      // await adminService.exportData(type);
-      console.log('Export data:', type);
-    } catch (error) {
+      if (!token) {
+        toast.error('Authentication required. Please log in again.');
+        return;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/export/${type}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Session expired. Please log in again.');
+          return;
+        }
+        
+        const error = await response.json().catch(() => ({ message: 'Export failed' }));
+        throw new Error(error.message || 'Export failed');
+      }
+
+      // Get the filename from the Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filename = contentDisposition
+        ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+        : `export_${type}_${Date.now()}.csv`;
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} data exported successfully!`);
+    } catch (error: any) {
       console.error('Export failed:', error);
+      toast.error(error.message || 'Failed to export data');
     }
   };
+
 
   const getRoleColor = (role: string) => {
     switch (role) {

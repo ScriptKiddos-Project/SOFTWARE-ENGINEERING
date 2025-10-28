@@ -4,6 +4,7 @@ import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface Event {
   id: string;
@@ -57,6 +58,8 @@ const TopEvents: React.FC<TopEventsProps> = ({
     return { status: 'low', color: 'bg-green-500' };
   };
 
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <Card>
@@ -94,7 +97,7 @@ const TopEvents: React.FC<TopEventsProps> = ({
             <Calendar className="h-5 w-5" />
             Top Events
           </div>
-          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800" onClick={() => navigate('/events')}>
             View All
           </Button>
         </CardTitle>

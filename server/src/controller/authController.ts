@@ -101,7 +101,8 @@ export class AuthController {
       // ✅ Add better error message based on verification status
       if (!existingUser.isVerified) {
         throw new AppError(
-          'This email is already registered but not verified. Please check your email for the verification link or request a new one.',
+          // 'This email is already registered but not verified. Please check your email for the verification link or request a new one.',
+          'Registration successful! Please check your email to verify your account.',
           HTTP_STATUS.CONFLICT
         );
       }
